@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sharkbite</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="icon" type="image/png" href="img/logo/logo_shark.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -2319,15 +2320,16 @@
 </div>
 <script>
 /* ============================================================
-   CONFIG
+   SUPABASE
 ============================================================ */
-const GITHUB_OWNER = 'caiomalbuquerque';
-const GITHUB_REPO = 'calendario';
-const GITHUB_BRANCH = 'main';
-const GITHUB_FILE_PATH = 'calendario.json';
-const CACHE_KEY = 'planner_fgh';
+const SUPABASE_URL  = 'https://SEU-PROJETO.supabase.co';
+const SUPABASE_ANON = 'SUA_ANON_KEY';           // Dashboard → Settings → API
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const CACHE_KEY      = 'planner_fgh';
 const CACHE_TIME_KEY = 'planner_fgh_time';
-const TOKEN_KEY = 'planner_fgh_token';
+// TOKEN_KEY não é mais usado — o Supabase guarda a sessão sozinho
 const VIEW_KEY = 'planner_fgh_view';
 const CACHE_DURATION = 5 * 60 * 1000;
 const BG_FOLDER = 'img/background';
@@ -2450,7 +2452,9 @@ let nextId = 1;
 let currentDate = new Date();
 let view = 'mes';
 let diaSelecionado = null;
-let authToken = sessionStorage.getItem(TOKEN_KEY) || '';
+let authUser = null;      // usuário logado (null = visitante)
+let authToken = '';       // MANTIDO por compatibilidade — só para os checks espalhados
+                          // (vamos preencher com 'supabase' quando logado, e depois limpar)
 let filtros = { tipo:'', status:'', responsavel:'', area:'', complexidade:'' };
 let dragState = { eventId: null, sourceDay: null };
 let backgroundsDisponiveis = [];
@@ -2863,19 +2867,162 @@ function renderThemeAdmin(){
 /* ============================================================
    PERSISTÊNCIA
 ============================================================ */
-async function loadFromGitHub(){
-    const url = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${GITHUB_FILE_PATH}`;
-    try { const r = await fetch(url+'?t='+Date.now()); if(!r.ok) throw new Error('nf'); return await r.json(); }
-    catch(e){ console.warn('Sem dados remotos:', e); return null; }
+async function carregarDoSupabase(){
+    const [
+        { data: configRows, error: e1 },
+        { data: eventos,    error: e2 },
+        { data: notas,      error: e3 },
+        { data: produtos,   error: e4 },
+        { data: entradas,   error: e5 },
+        { data: series,     error: e6 },
+        { data: reunioes,   error: e7 },
+    ] = await Promise.all([
+        sb.from('config').select('*'),
+        sb.from('eventos').select('*').order('ordem'),
+        sb.from('notas').select('*').order('criado_em'),
+        sb.from('registros_produtos').select('*'),
+        sb.from('registros_entradas').select('*'),
+        sb.from('reunioes_series').select('*'),
+        sb.from('reunioes_entradas').select('*'),
+    ]);
+
+    const err = e1 || e2 || e3 || e4 || e5 || e6 || e7;
+    if(err){ console.error('Erro ao carregar:', err); return null; }
+
+    // Reconstrói config como objeto (era um chave/valor no banco)
+    const config = {};
+    (configRows || []).forEach(r => { config[r.chave] = r.valor; });
+
+    // Anexa entradas em produtos e reuniões (mesma forma do JSON antigo)
+    const registros = (produtos || []).map(p => ({
+        ...mapProdutoDoBanco(p),
+        entradas: (entradas || [])
+            .filter(e => e.produto_id === p.id)
+            .map(mapEntradaDoBanco)
+    }));
+
+    const reunioesFinal = (series || []).map(s => ({
+        ...mapSerieDoBanco(s),
+        entradas: (reunioes || [])
+            .filter(e => e.serie_id === s.id)
+            .map(mapReuniaoEntradaDoBanco)
+    }));
+
+    return {
+        config,
+        eventos:   (eventos || []).map(mapEventoDoBanco),
+        notas:     (notas   || []).map(mapNotaDoBanco),
+        registros,
+        reunioes:  reunioesFinal,
+    };
 }
+
+/* ---------- Mapeadores: banco (snake) → front (camel) ---------- */
+
+function mapEventoDoBanco(e){
+    return {
+        id: e.id,
+        dataInicio: e.data_inicio || '',
+        dataFim:    e.data_fim    || '',
+        titulo:     e.titulo      || '',
+        responsavel:e.responsavel || '',
+        area:       e.area        || '',
+        descricao:  e.descricao   || '',
+        descricaoHtml: e.descricao_html || '',
+        tipo:       e.tipo        || '',
+        status:     e.status      || '',
+        complexidade: e.complexidade || '',
+        checklist:  e.checklist   || [],
+        ordem:      e.ordem       || 0,
+    };
+}
+
+function mapNotaDoBanco(n){
+    return {
+        id: n.id,
+        titulo: n.titulo || '',
+        conteudo: n.conteudo || '',
+        cor: n.cor || '#ffffff',
+        anexos: n.anexos || [],
+        criadoEm:    n.criado_em,
+        atualizadoEm:n.atualizado_em,
+        ordem: n.ordem || 0,
+    };
+}
+
+function mapProdutoDoBanco(p){
+    return {
+        id: p.id,
+        nome: p.nome,
+        cor: p.cor || 'var(--primary)',
+        expandido: p.expandido !== false,
+    };
+}
+
+function mapEntradaDoBanco(r){
+    return {
+        id: r.id,
+        titulo: r.titulo || '',
+        descricao: r.descricao || '',
+        onde: r.onde || '',
+        resolucao: r.resolucao || '',
+        responsavel: r.responsavel || '',
+        statusLog: r.status_log || '',
+        anexosArquivos: r.anexos_arquivos || [],
+        data: r.data,
+    };
+}
+
+function mapSerieDoBanco(s){
+    return {
+        id: s.id,
+        nome: s.nome,
+        cor: s.cor || '',
+        expandido: s.expandido !== false,
+    };
+}
+
+function mapReuniaoEntradaDoBanco(en){
+    return {
+        id: en.id,
+        data: en.data || '',
+        dataHora: en.data_hora || '',
+        hora: en.data_hora ? en.data_hora.slice(0,2) : '',
+        minuto: en.data_hora ? en.data_hora.slice(3,5) : '',
+        participantes: en.participantes ? en.participantes.split(',').map(x=>x.trim()).filter(Boolean) : [],
+        setor: en.setor || '',
+        pautas: en.pautas || [],
+        pendencias: en.pendencias || [],
+        assuntos: en.assuntos || [],
+        encaminhamentos: en.encaminhamentos || [],
+        pautasHtml: en.pautas_html || '',
+        pendenciasHtml: en.pendencias_html || '',
+        assuntosHtml: en.assuntos_html || '',
+        encaminhamentosHtml: en.encaminhamentos_html || '',
+    };
+}
+    
 async function loadData(){
     const raw = localStorage.getItem(CACHE_KEY);
-    const t = Number(localStorage.getItem(CACHE_TIME_KEY)||0);
-    if(raw && t && (Date.now()-t < CACHE_DURATION)){ try{ data = JSON.parse(raw); prepararDados(); return; }catch(e){} }
-    const remote = await loadFromGitHub();
-    if(remote){ data = remote; prepararDados(); cacheLocal(); localStorage.setItem(CACHE_TIME_KEY, String(Date.now())); return; }
-    if(raw){ try{ data = JSON.parse(raw); prepararDados(); return; }catch(e){} }
-    cacheLocal();
+    const t = Number(localStorage.getItem(CACHE_TIME_KEY) || 0);
+
+    // Cache curto: 30s. Se o Supabase responder rápido, nem usa cache.
+    if(raw && t && (Date.now() - t < 30000)){
+        try { data = JSON.parse(raw); prepararDados(); return; } catch(e){}
+    }
+
+    const remoto = await carregarDoSupabase();
+    if(remoto){
+        data = remoto;
+        prepararDados();
+        cacheLocal();
+        localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+        return;
+    }
+
+    // Fallback offline: última versão em cache
+    if(raw){ try { data = JSON.parse(raw); prepararDados(); } catch(e){} }
+    else   { cacheLocal(); }
 }
 function prepararDados(){
     if(!data.eventos) data.eventos = [];
@@ -3069,22 +3216,11 @@ function renderFotoPreview(){
 /* ============================================================
    AUTENTICAÇÃO
 ============================================================ */
-async function validarToken(token){
-    try {
-        const r = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}`, {headers:{Authorization:`Bearer ${token}`}});
-        if(!r.ok) return false;
-        const info = await r.json();
-        return info.permissions && info.permissions.push === true;
-    } catch(e){ return false; }
-}
+async function validarToken(){ return !!authUser; }
 async function abrirAdmin(){
-    if(!authToken){
-        const t = prompt('Cole seu token do GitHub (com permissão de escrita):');
-        if(!t) return;
-        const ok = await validarToken(t);
-        if(!ok){ alert('Token inválido ou sem permissão de escrita.'); return; }
-        authToken = t;
-        sessionStorage.setItem(TOKEN_KEY, t);
+    if(!authUser){
+        const ok = await abrirLoginSupabase();
+        if(!ok) return;
     }
     renderAdminListas();
     renderBgAdmin();
@@ -3095,6 +3231,27 @@ async function abrirAdmin(){
     carregarBackgroundsSeNecessario();
     carregarUserPhotosSeNecessario();
 }
+
+async function abrirLoginSupabase(){
+    const email = prompt('E-mail (admin):');
+    if(!email) return false;
+    const senha = prompt('Senha:');
+    if(!senha) return false;
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+    if(error){ alert('Login falhou: ' + error.message); return false; }
+
+    authUser  = data.user;
+    authToken = 'supabase';           // ativa os checks espalhados
+    return true;
+}
+
+async function logoutSupabase(){
+    await sb.auth.signOut();
+    authUser = null;
+    authToken = '';
+}
+    
 function fecharAdmin(){
     document.getElementById('modalAdmin').classList.remove('active');
     // Se houver pendências, força salvamento
@@ -3103,12 +3260,10 @@ function fecharAdmin(){
         salvarAutomatico();
     }
 }
-function fazerLogout(){
+async function fazerLogout(){
     if(!confirm('Sair do modo admin?')) return;
-    // Salva pendências antes de sair
-    if(autosave.alteracoesPendentes) salvarAutomatico();
-    authToken = '';
-    sessionStorage.removeItem(TOKEN_KEY);
+    if(autosave.alteracoesPendentes) await salvarAutomatico();
+    await logoutSupabase();
     fecharAdmin();
 }
 
@@ -7243,6 +7398,12 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     popularFiltros();
     render();
     atualizarBotaoSalvar();
+    // Restaura sessão do Supabase (se o usuário já estava logado)
+    const { data: { session } } = await sb.auth.getSession();
+    if(session){
+    authUser = session.user;
+    authToken = 'supabase';
+    }
 
     document.addEventListener('keydown', e=>{
         if(e.key === 'Escape'){ fecharForm(); fecharModalDia(); fecharAdmin(); return; }
