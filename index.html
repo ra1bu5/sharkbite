@@ -1710,7 +1710,7 @@
     .appbar, .subbar, .filters, .legend { flex-shrink: 0; }
     .legend { margin: 6px 20px 12px; padding: 8px 12px; }
     body[data-view=quadro] #viewContainer { overflow: hidden; }
-    body[data-view=quadro] .datenav, body[data-view=quadro] .legend, body[data-view=notas] .legend, body[data-view=reunioes] .legend { display: none; }
+    body[data-view=quadro] .datenav, body[data-view=quadro] .legend, body[data-view=notas] .legend, body[data-view=reunioes] .legend, body[data-view=registros] .legend { display: none; }
     body[data-view=quadro].arrastando .inbox-dropzone { display: none; }
     .brand-name { font-size: 22px; }
     .btn-ic { display: inline-flex; align-items: center; gap: 6px; }
@@ -1987,6 +1987,23 @@
         .task-checklist-item .check-delete { grid-column: 5 / 6; grid-row: 1 / span 2; }
         .check-handle { grid-row: 1 / span 2; }
     }
+    /* ===== Change Log: barra de busca ===== */
+    .busca-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex-shrink: 0; background: var(--filter-bg); border: var(--border-width) var(--border-style) var(--filter-border); padding: 8px 12px; margin: 16px 20px 0; border-radius: var(--radius); }
+    .busca-bar .lbl { font-family: var(--font-heading); font-size: 11px; color: var(--filter-text); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+    .busca-bar select { border: var(--border-width) var(--border-style) var(--filter-border); background: var(--bg-panel-alt); color: var(--filter-text); font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer; padding: 6px 8px; border-radius: var(--radius-sm); }
+    .busca-input-wrap { position: relative; display: flex; align-items: center; flex: 1 1 260px; max-width: 560px; }
+    .busca-input-wrap .ic { position: absolute; left: 10px; color: var(--text-muted); pointer-events: none; }
+    .busca-input-wrap input { width: 100%; padding: 7px 10px 7px 32px; border: var(--border-width) var(--border-style) var(--filter-border); background: var(--bg-panel-alt); color: var(--text-color); font-family: var(--font-body); font-size: 14px; border-radius: var(--radius-sm); }
+    .busca-input-wrap input:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+    .busca-bar .count { margin-left: auto; color: var(--filter-text); font-size: 14px; font-weight: 700; }
+    .registro-card mark { background: #fff3a3; color: #000; border-radius: 2px; padding: 0 1px; }
+    .registro-card-trecho { margin-top: 6px; font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+    .registro-card-trecho .badge { font-size: 12px; }
+    @media (max-width: 700px) {
+        .busca-bar { margin: 8px 10px 0; padding: 8px; }
+        .busca-bar select, .busca-input-wrap { flex: 1 1 100%; max-width: none; }
+        .busca-bar .count { margin-left: 0; }
+    }
 </style>
 </head>
 <body>
@@ -2040,6 +2057,24 @@
             <button class="btn btn-nav" onclick="navNext()" title="Próximo">›</button>
             <button class="btn btn-primary" onclick="irHoje()">Hoje</button>
         </div>
+    </div>
+
+    <div class="busca-bar" id="registroBuscaBar" style="display:none;">
+        <span class="lbl">Buscar por:</span>
+        <select id="registroBuscaCampo" onchange="registroBuscaMudouCampo(this)" aria-label="Campo da busca">
+            <option value="titulo">Título do log</option>
+            <option value="responsavel">Responsável</option>
+            <option value="status">Status do log</option>
+            <option value="descricao">Termos na descrição</option>
+        </select>
+        <div class="busca-input-wrap">
+            <span data-ic="search"></span>
+            <input type="text" id="registroBuscaTexto" list="registroBuscaSugestoes" autocomplete="off" placeholder="Buscar pelo título do log…"
+                   oninput="registroBuscaMudouTexto(this)" onkeydown="if(event.key==='Escape'){ event.stopPropagation(); registroBuscaLimpar(); }" aria-label="Texto da busca">
+            <datalist id="registroBuscaSugestoes"></datalist>
+        </div>
+        <button class="btn btn-mini" style="background:var(--filter-text);color:var(--filter-bg);" onclick="registroBuscaLimpar()">Limpar</button>
+        <span class="count" id="registroBuscaCount"></span>
     </div>
 
     <div id="viewContainer"></div>
@@ -2323,7 +2358,7 @@
    SUPABASE
 ============================================================ */
 const SUPABASE_URL  = 'https://vaipqzmdsdanypuprxrk.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaXBxem1kc2RhbnlwdXByeHJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NDA0MTAsImV4cCI6MjEwNjExNjQxMH0.r5PBsVKPDDROHaBWbLpsnaezMmsdxc97pkm5205ji-c';           // Dashboard → Settings → API
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaXBxem1kc2RhbnlwdXByeHJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NDA0MTAsImV4cCI6MjEwNjExNjQxMH0.r5PBsVKPDDROHaBWbLpsnaezMmsdxc97pkm5205ji-c';
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -2473,6 +2508,8 @@ let notaTextoSelecionado = '';
 let registroProdutoAtivoId = null;
 let registroEntradaAtivaId = null;
 let registroEditandoLog = false;
+let registroBuscaCampo = 'titulo';   // 'titulo' | 'responsavel' | 'status' | 'descricao'
+let registroBuscaTexto = '';
 let reuniaoSerieAtivaId = null;
 let reuniaoEntradaAtivaId = null;
 
@@ -3937,6 +3974,12 @@ function render(){
         filtersBar.style.display =
             view === 'registros' ? 'none' : '';
     }
+    const buscaBar = document.getElementById('registroBuscaBar');
+    if(buscaBar){
+        const mostrar = view === 'registros';
+        if(mostrar && buscaBar.style.display === 'none') registroBuscaConfigurarCampo();
+        buscaBar.style.display = mostrar ? '' : 'none';
+    }
     
     aplicarTamanhoView(); fecharPopDia(); marcarSemana();
     document.querySelectorAll('.btn-toggle').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
@@ -4451,12 +4494,147 @@ const REGISTRO_STATUS = [
     { id:'finalizado-publicado-informado', label:'Finalizado, publicado e informado', cor:'#673ab7' }
 ];
 function getRegistroStatus(id){ return REGISTRO_STATUS.find(s => s.id === id) || null; }
+
+/* ============================================================
+   CHANGE LOG — BUSCA (título, responsável, status ou descrição)
+============================================================ */
+const REGISTRO_BUSCA_CAMPOS = {
+    titulo:      { label: 'Título do log',        placeholder: 'Buscar pelo título do log…' },
+    responsavel: { label: 'Responsável',          placeholder: 'Buscar por responsável…' },
+    status:      { label: 'Status do log',        placeholder: 'Buscar por status (ex.: validação)…' },
+    descricao:   { label: 'Termos na descrição',  placeholder: 'Buscar termos na descrição do log…' }
+};
+/* minúsculas e sem acentos: "Validação" encontra "validacao" */
+function buscaNorm(t){ return String(t == null ? '' : t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+function registroBuscaTermos(){
+    return buscaNorm(registroBuscaTexto).split(/\s+/).map(t => t.replace(/^@+/, '')).filter(Boolean);
+}
+function registroBuscaAtiva(){ return registroBuscaTermos().length > 0; }
+function registroValorBusca(reg){
+    if(registroBuscaCampo === 'responsavel') return reg.responsavel || '';
+    if(registroBuscaCampo === 'status'){ const st = getRegistroStatus(reg.statusLog); return st ? st.label : ''; }
+    if(registroBuscaCampo === 'descricao') return reg.descricao || '';
+    return reg.titulo || '';
+}
+/* todos os termos digitados precisam aparecer no campo escolhido */
+function registroCombina(reg){
+    const termos = registroBuscaTermos();
+    if(!termos.length) return true;
+    const alvo = buscaNorm(registroValorBusca(reg));
+    return termos.every(t => alvo.includes(t));
+}
+/* devolve o texto já escapado, com os termos dentro de <mark> */
+function buscaDestacar(texto, termos){
+    texto = String(texto == null ? '' : texto);
+    const n = buscaNorm(texto);
+    if(!termos || !termos.length || n.length !== texto.length) return escapeHtml(texto);
+    const marca = new Array(texto.length).fill(false);
+    termos.forEach(t => {
+        let i = n.indexOf(t);
+        while(i !== -1){ for(let k = i; k < i + t.length; k++) marca[k] = true; i = n.indexOf(t, i + t.length); }
+    });
+    let out = '', aberto = false;
+    for(let i = 0; i < texto.length; i++){
+        if(marca[i] && !aberto){ out += '<mark>'; aberto = true; }
+        if(!marca[i] && aberto){ out += '</mark>'; aberto = false; }
+        out += escapeHtml(texto[i]);
+    }
+    return aberto ? out + '</mark>' : out;
+}
+/* trecho da descrição em volta da primeira ocorrência */
+function buscaTrecho(texto, termos){
+    texto = String(texto || '').replace(/\s+/g, ' ').trim();
+    const n = buscaNorm(texto);
+    let pos = -1;
+    if(n.length === texto.length) termos.forEach(t => { const i = n.indexOf(t); if(i !== -1 && (pos === -1 || i < pos)) pos = i; });
+    const ini = pos > 40 ? pos - 40 : 0;
+    const fim = Math.min(texto.length, ini + 170);
+    return (ini > 0 ? '…' : '') + buscaDestacar(texto.slice(ini, fim), termos) + (fim < texto.length ? '…' : '');
+}
+function registroBuscaConfigurarCampo(){
+    const info = REGISTRO_BUSCA_CAMPOS[registroBuscaCampo];
+    const sel = document.getElementById('registroBuscaCampo'); if(sel) sel.value = registroBuscaCampo;
+    const inp = document.getElementById('registroBuscaTexto');
+    if(inp){ inp.placeholder = info.placeholder; if(inp.value !== registroBuscaTexto) inp.value = registroBuscaTexto; }
+    const dl = document.getElementById('registroBuscaSugestoes');
+    if(dl){
+        let opcoes = [];
+        if(registroBuscaCampo === 'responsavel') opcoes = (data.config.responsaveis || []).map(r => r.label);
+        else if(registroBuscaCampo === 'status') opcoes = REGISTRO_STATUS.map(s => s.label);
+        dl.innerHTML = opcoes.map(o => `<option value="${escapeHtml(o)}"></option>`).join('');
+    }
+}
+function registroBuscaMudouCampo(sel){ registroBuscaCampo = sel.value; registroBuscaConfigurarCampo(); registroBuscaAplicar(); }
+function registroBuscaMudouTexto(inp){ registroBuscaTexto = inp.value; registroBuscaAplicar(); }
+function registroBuscaAplicar(){
+    // Buscando: os resultados aparecem no painel da direita, então fecha o log aberto
+    // (se estava em edição, guarda o que já foi digitado para não perder nada)
+    if(registroBuscaAtiva() && registroEntradaAtivaId){
+        if(registroEditandoLog){ registroSincronizarCamposEdicao(); marcarAlterado(); }
+        registroEntradaAtivaId = null;
+        registroEditandoLog = false;
+    }
+    renderRegistros();
+}
+function registroBuscaLimpar(){
+    registroBuscaTexto = '';
+    const inp = document.getElementById('registroBuscaTexto');
+    if(inp){ inp.value = ''; inp.focus(); }
+    renderRegistros();
+}
+function registroBuscaAtualizarContagem(){
+    const el = document.getElementById('registroBuscaCount'); if(!el) return;
+    if(!registroBuscaAtiva()){ el.textContent = ''; return; }
+    let n = 0;
+    (data.registros || []).forEach(p => (p.entradas || []).forEach(r => { if(registroCombina(r)) n++; }));
+    el.textContent = n === 1 ? '1 resultado' : `${n} resultados`;
+}
+function registroResultadosBuscaHtml(){
+    const termos = registroBuscaTermos();
+    const campo = registroBuscaCampo;
+    const res = [];
+    (data.registros || []).forEach(p => (p.entradas || []).forEach(r => { if(registroCombina(r)) res.push({ p, r }); }));
+    res.sort((a, b) => new Date(b.r.data) - new Date(a.r.data));
+    const nProd = new Set(res.map(x => x.p.id)).size;
+
+    const cards = res.map(({ p, r }) => {
+        const d = new Date(r.data);
+        const dataStr = `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+        let trecho = '';
+        if(campo === 'responsavel' && r.responsavel){
+            trecho = `<span class="badge badge-resp" style="${badgeStyle(getRespCor(r.responsavel))}">@${buscaDestacar(r.responsavel, termos)}</span>`;
+        } else if(campo === 'status'){
+            const st = getRegistroStatus(r.statusLog);
+            if(st) trecho = `<span class="badge" style="${badgeStyle(st.cor)}">${buscaDestacar(st.label, termos)}</span>`;
+        } else if(campo === 'descricao'){
+            trecho = buscaTrecho(r.descricao, termos);
+        }
+        return `<div class="registro-card" onclick="selecionarRegistroEntrada(${p.id}, ${r.id})">
+            <div class="registro-card-data">${dataStr} · ${escapeHtml(p.nome || 'Sem nome')}</div>
+            <div class="registro-card-titulo">${campo === 'titulo' ? buscaDestacar(r.titulo || 'Sem título', termos) : escapeHtml(r.titulo || 'Sem título')}</div>
+            ${trecho ? `<div class="registro-card-trecho">${trecho}</div>` : ''}
+            <div class="registro-card-link">Ver registro →</div>
+        </div>`;
+    }).join('');
+
+    return `<div class="registro-lista-conteudo">
+        <div class="registro-lista-head"><div>
+            <div class="registro-lista-titulo">Resultados da busca</div>
+            <div class="registro-lista-subtitulo">${res.length === 1 ? '1 log' : res.length + ' logs'} em ${nProd === 1 ? '1 produto/painel' : nProd + ' produtos/painéis'} · ${escapeHtml(REGISTRO_BUSCA_CAMPOS[campo].label)}: “${escapeHtml(registroBuscaTexto.trim())}”</div>
+        </div></div>
+        ${res.length ? cards : '<div class="registro-lista-vazio">Nenhum log encontrado.</div>'}
+    </div>`;
+}
+
     
 function renderRegistros(){
 
     const c = document.getElementById('viewContainer');
 
     if(!data.registros) data.registros = [];
+
+    const buscando = registroBuscaAtiva();
+    registroBuscaAtualizarContagem();
 
     // Se ainda não houver produto selecionado,
     // seleciona o primeiro.
@@ -4489,10 +4667,16 @@ function renderRegistros(){
                     ? 'ativa'
                     : '';
 
-            const entradas = [...(produto.entradas || [])]
+            let entradas = [...(produto.entradas || [])]
                 .sort((a,b) =>
                     new Date(b.data) - new Date(a.data)
                 );
+
+            // Buscando: só entram na lateral os logs que combinam (e os produtos que os têm)
+            if(buscando){
+                entradas = entradas.filter(registroCombina);
+                if(entradas.length === 0) return '';
+            }
 
             const entradasHtml = entradas.length === 0
 
@@ -4549,7 +4733,7 @@ function renderRegistros(){
                     >
 
                         <span class="registro-arrow">
-                            ${produto.expandido !== false ? '▾' : '▸'}
+                            ${(produto.expandido !== false || buscando) ? '▾' : '▸'}
                         </span>
 
                         <span
@@ -4582,7 +4766,7 @@ function renderRegistros(){
                     </div>
 
                     ${
-                        produto.expandido !== false
+                        (produto.expandido !== false || buscando)
                             ? `
                                 <ul class="registro-entradas">
                                     ${entradasHtml}
@@ -4634,7 +4818,11 @@ function renderRegistros(){
            mostra a LISTA das modificações.
         */
 
-        if(!registroAtivo){
+        if(!registroAtivo && buscando){
+
+            conteudoDireita = registroResultadosBuscaHtml();
+
+        } else if(!registroAtivo){
 
 conteudoDireita = `
     <div class="registro-lista-conteudo">
@@ -4855,7 +5043,7 @@ conteudoDireita = `
                 </button>
 
                 <ul class="notas-lista">
-                    ${listaHtml}
+                    ${listaHtml || '<li class="notas-vazio">Nenhum log encontrado.</li>'}
                 </ul>
 
             </div>
@@ -7750,6 +7938,7 @@ const IC = {
     check: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12l3 3 5-6"/>',
     ul: '<path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
     marker: '<path d="M9 11l-5 5v4h4l5-5M9 11l6-6 4 4-6 6z"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
     grip: '<circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>'
 };
 function ic(n, s){ s = s || 16; return `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n] || ''}</svg>`; }
