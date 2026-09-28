@@ -2327,6 +2327,11 @@ const SUPABASE_ANON = 'SUA_ANON_KEY';           // Dashboard → Settings → AP
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+// Só para LISTAR as imagens de img/background e img/user-photo (leitura pública, sem token)
+const GITHUB_OWNER = 'ra1bu5';
+const GITHUB_REPO  = 'sharkbite';
+const GITHUB_BRANCH = 'main';
+
 const CACHE_KEY      = 'planner_fgh';
 const CACHE_TIME_KEY = 'planner_fgh_time';
 // TOKEN_KEY não é mais usado — o Supabase guarda a sessão sozinho
@@ -2509,6 +2514,221 @@ function badgeStyle(cor){ const base = hexToRgb(cor || '#888'); const bg = rgbTo
 function getUserPhotoSrc(){ const f = data.config && data.config.userPhoto; if(f) return `${USER_PHOTO_FOLDER}/${encodeURI(f)}`; return DEFAULT_USER_PHOTO; }
 
 /* ============================================================
+   SINCRONIZAÇÃO COM O SUPABASE (gravação por linha)
+   - Guarda um "snapshot" (hash de cada linha já gravada no banco)
+   - A cada salvamento compara o estado atual com o snapshot e envia
+     SÓ o que mudou (upsert) e o que foi apagado (delete).
+============================================================ */
+const SNAP_KEY = 'planner_fgh_snap';
+const PEND_KEY = 'planner_fgh_pendente';   // '1' = há alterações ainda não gravadas no banco
+const STORAGE_BUCKET = 'anexos';
+
+// data.config (camelCase) <-> tabela config (snake_case)
+const CONFIG_CHAVES = { userPhoto:'user_photo', temaAtivo:'tema_ativo', linhasMes:'linhas_mes' };
+const CONFIG_CHAVES_INV = Object.fromEntries(Object.entries(CONFIG_CHAVES).map(([a,b]) => [b,a]));
+const configParaBanco = k => CONFIG_CHAVES[k] || k;
+const configDoBanco   = k => CONFIG_CHAVES_INV[k] || k;
+
+// Ordem respeita as chaves estrangeiras (pai antes do filho)
+const TABELAS = ['config','registros_produtos','reunioes_series','eventos','notas','registros_entradas','reunioes_entradas'];
+const pkDe = t => t === 'config' ? 'chave' : 'id';
+
+let snapshot = {};
+let accessToken = '';
+sb.auth.onAuthStateChange((_ev, session) => { accessToken = session ? session.access_token : ''; });
+
+function hash53(str){
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for(let i = 0, ch; i < str.length; i++){
+        ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/* ---------- front (camel) → banco (snake) ---------- */
+function montarLinhas(d){
+    const L = {};
+    TABELAS.forEach(t => L[t] = {});
+
+    Object.keys(d.config || {}).forEach(k => {
+        if(d.config[k] === undefined) return;
+        const chave = configParaBanco(k);
+        L.config[chave] = { chave, valor: d.config[k] };
+    });
+
+    (d.eventos || []).forEach(e => {
+        L.eventos[e.id] = {
+            id: e.id,
+            data_inicio: e.dataInicio || null,
+            data_fim: e.dataFim || null,
+            titulo: e.titulo || '',
+            responsavel: e.responsavel || '',
+            area: e.area || '',
+            descricao: e.descricao || '',
+            descricao_html: e.descricaoHtml || '',
+            tipo: e.tipo || '',
+            status: e.status || '',
+            complexidade: e.complexidade || '',
+            checklist: e.checklist || [],
+            ordem: e.ordem || 0
+        };
+    });
+
+    (d.notas || []).forEach(n => {
+        if(!n.criadoEm) n.criadoEm = new Date().toISOString();
+        L.notas[n.id] = {
+            id: n.id,
+            titulo: n.titulo || '',
+            conteudo: n.conteudo || '',
+            cor: n.cor || '#ffffff',
+            anexos: n.anexos || [],
+            ordem: n.ordem || 0,
+            criado_em: n.criadoEm
+        };
+    });
+
+    (d.registros || []).forEach(p => {
+        L.registros_produtos[p.id] = {
+            id: p.id, nome: p.nome || '', cor: p.cor || 'var(--primary)',
+            expandido: p.expandido !== false
+        };
+        (p.entradas || []).forEach(en => {
+            if(!en.data) en.data = new Date().toISOString();
+            L.registros_entradas[en.id] = {
+                id: en.id, produto_id: p.id,
+                titulo: en.titulo || '', descricao: en.descricao || '',
+                onde: en.onde || '', resolucao: en.resolucao || '',
+                responsavel: en.responsavel || '', status_log: en.statusLog || '',
+                anexos_arquivos: en.anexosArquivos || [], data: en.data
+            };
+        });
+    });
+
+    (d.reunioes || []).forEach(s => {
+        L.reunioes_series[s.id] = {
+            id: s.id, nome: s.nome || '', cor: s.cor || '',
+            expandido: s.expandido !== false
+        };
+        (s.entradas || []).forEach(en => {
+            L.reunioes_entradas[en.id] = {
+                id: en.id, serie_id: s.id,
+                data: en.data || null,
+                data_hora: en.dataHora || '',
+                participantes: Array.isArray(en.participantes) ? en.participantes.join(', ') : (en.participantes || ''),
+                setor: en.setor || '',
+                pautas: en.pautas || [], pendencias: en.pendencias || [],
+                assuntos: en.assuntos || [], encaminhamentos: en.encaminhamentos || [],
+                pautas_html: en.pautasHtml || '', pendencias_html: en.pendenciasHtml || '',
+                assuntos_html: en.assuntosHtml || '', encaminhamentos_html: en.encaminhamentosHtml || ''
+            };
+        });
+    });
+    return L;
+}
+
+/* ---------- snapshot ---------- */
+function reconstruirSnapshot(){
+    const L = montarLinhas(data);
+    snapshot = {};
+    TABELAS.forEach(t => {
+        snapshot[t] = {};
+        Object.keys(L[t]).forEach(k => { snapshot[t][k] = hash53(JSON.stringify(L[t][k])); });
+    });
+}
+function salvarSnapshot(){ try { localStorage.setItem(SNAP_KEY, JSON.stringify(snapshot)); } catch(e){} }
+
+/* ---------- diff: o que mudou desde o último salvamento ---------- */
+function calcularDiferencas(){
+    const atual = montarLinhas(data);
+    const ups = {}, dels = {}, hashes = {};
+    TABELAS.forEach(t => {
+        const ant = snapshot[t] || {};
+        ups[t] = []; hashes[t] = {};
+        Object.keys(atual[t]).forEach(k => {
+            const h = hash53(JSON.stringify(atual[t][k]));
+            hashes[t][k] = h;
+            if(ant[k] !== h) ups[t].push(atual[t][k]);
+        });
+        // config nunca é apagada por diff (chave ausente ≠ chave removida)
+        dels[t] = t === 'config' ? [] : Object.keys(ant).filter(k => !(k in atual[t])).map(Number);
+    });
+    return { ups, dels, hashes };
+}
+
+/* ---------- grava no banco ---------- */
+async function sincronizarComBanco(){
+    const { ups, dels, hashes } = calcularDiferencas();
+    TABELAS.forEach(t => { if(!snapshot[t]) snapshot[t] = {}; });
+    let ops = 0;
+    try {
+        for(const t of TABELAS){
+            const pk = pkDe(t);
+            for(let i = 0; i < ups[t].length; i += 100){
+                const lote = ups[t].slice(i, i + 100);
+                const { error } = await sb.from(t).upsert(lote, { onConflict: pk });
+                if(error) throw new Error(`${t}: ${error.message}`);
+                lote.forEach(r => { snapshot[t][r[pk]] = hashes[t][r[pk]]; });
+                ops += lote.length;
+            }
+        }
+        // apaga filhos antes dos pais
+        for(const t of [...TABELAS].reverse()){
+            for(let i = 0; i < dels[t].length; i += 100){
+                const lote = dels[t].slice(i, i + 100);
+                const { error } = await sb.from(t).delete().in(pkDe(t), lote);
+                if(error) throw new Error(`${t}: ${error.message}`);
+                lote.forEach(id => { delete snapshot[t][id]; });
+                ops += lote.length;
+            }
+        }
+    } finally {
+        salvarSnapshot();   // guarda o progresso mesmo se der erro no meio
+    }
+    return ops;
+}
+
+/* ---------- salvamento ao fechar a aba (melhor esforço) ---------- */
+function salvarAntesDeFecharKeepalive(){
+    if(!accessToken) return;
+    const { ups, dels } = calcularDiferencas();
+    const headers = {
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=minimal'
+    };
+    TABELAS.forEach(t => {
+        if(ups[t].length){
+            fetch(`${SUPABASE_URL}/rest/v1/${t}?on_conflict=${pkDe(t)}`, {
+                method: 'POST', headers, body: JSON.stringify(ups[t]), keepalive: true
+            }).catch(() => {});
+        }
+        if(dels[t].length){
+            fetch(`${SUPABASE_URL}/rest/v1/${t}?${pkDe(t)}=in.(${dels[t].join(',')})`, {
+                method: 'DELETE', headers, keepalive: true
+            }).catch(() => {});
+        }
+    });
+}
+
+/* ---------- anexos no Supabase Storage (substitui o upload via GitHub) ---------- */
+function storageUrl(caminho){
+    return sb.storage.from(STORAGE_BUCKET).getPublicUrl(caminho).data.publicUrl;
+}
+async function storageUpload(caminho, file){
+    const { error } = await sb.storage.from(STORAGE_BUCKET).upload(caminho, file, {
+        contentType: file.type || 'application/octet-stream',
+        cacheControl: '31536000',
+        upsert: false
+    });
+    if(error) throw new Error(error.message);
+}
+
+/* ============================================================
    AUTOSAVE — CORE
 ============================================================ */
 function cacheLocal(){ localStorage.setItem(CACHE_KEY, JSON.stringify(data)); }
@@ -2529,8 +2749,9 @@ function marcarAlterado(opts){
     opts = opts || {};
     autosave.versao++;
     cacheLocal();
+    if(authToken) localStorage.setItem(PEND_KEY, '1');
     if(!getAutosaveConfig().ativo) return;
-    if(!authToken) return; // sem login, não tenta salvar no GitHub
+    if(!authToken) return; // sem login, não tenta salvar no banco
 
     autosave.alteracoesPendentes = true;
     atualizarBotaoSalvar();
@@ -2593,32 +2814,19 @@ async function salvarAutomatico(){
     }
 }
 
-/* Executa o PUT no GitHub. Retorna true/false.
+/* Grava no Supabase só o que mudou. Retorna true/false.
    NÃO mostra alert() — quem chama decide. */
 async function executarSalvamento(){
     if(!authToken) return false;
-    const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
-    let sha;
+    const v = autosave.versao;
     try {
-        const r = await fetch(apiUrl+`?ref=${GITHUB_BRANCH}`, {headers:{Authorization:`Bearer ${authToken}`}});
-        if(r.ok) sha = (await r.json()).sha;
-    } catch(e){ /* arquivo novo */ }
-
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-    const body = { message:`Atualiza planner - ${new Date().toLocaleString('pt-BR')}`, content, branch:GITHUB_BRANCH };
-    if(sha) body.sha = sha;
-
-    try {
-        const put = await fetch(apiUrl, { method:'PUT', headers:{Authorization:`Bearer ${authToken}`,'Content-Type':'application/json'}, body: JSON.stringify(body) });
-        if(!put.ok){
-            const err = await put.json().catch(()=>({}));
-            autosave.ultimoErro = err.message || ('HTTP ' + put.status);
-            return false;
-        }
+        await sincronizarComBanco();
         localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+        if(autosave.versao === v) localStorage.removeItem(PEND_KEY);
         return true;
     } catch(e){
-        autosave.ultimoErro = e.message;
+        console.error('Erro ao salvar:', e);
+        autosave.ultimoErro = (e && e.message) || String(e);
         return false;
     }
 }
@@ -2676,24 +2884,11 @@ async function salvarManual(){
     }
 }
 
-/* Salva antes de fechar a aba, se houver pendências */
+/* Salva antes de fechar a aba, se houver pendências (melhor esforço).
+   Se não der tempo, o cache local + flag de pendência garantem o reenvio na próxima abertura. */
 function salvarAntesDeFechar(){
-    if(!autosave.alteracoesPendentes) return;
-    if(!authToken) return;
-    // fetch com keepalive para tentar salvar mesmo após o fechamento
-    try {
-        const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
-        // Não temos tempo de pegar o sha, então tentamos um PUT mesmo assim.
-        // Se o sha estiver errado, o GitHub retorna 409 e o usuário perde a alteração —
-        // por isso o cacheLocal() já foi feito antes.
-        const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-        const body = JSON.stringify({ message:`Autosave ao fechar - ${new Date().toLocaleString('pt-BR')}`, content, branch:GITHUB_BRANCH });
-        fetch(apiUrl, {
-            method:'PUT',
-            headers:{Authorization:`Bearer ${authToken}`,'Content-Type':'application/json'},
-            body, keepalive: true
-        }).catch(()=>{});
-    } catch(e){}
+    if(!autosave.alteracoesPendentes || !authToken) return;
+    try { salvarAntesDeFecharKeepalive(); } catch(e){}
 }
 
 /* ============================================================
@@ -2891,7 +3086,7 @@ async function carregarDoSupabase(){
 
     // Reconstrói config como objeto (era um chave/valor no banco)
     const config = {};
-    (configRows || []).forEach(r => { config[r.chave] = r.valor; });
+    (configRows || []).forEach(r => { config[configDoBanco(r.chave)] = r.valor; });
 
     // Anexa entradas em produtos e reuniões (mesma forma do JSON antigo)
     const registros = (produtos || []).map(p => ({
@@ -3004,25 +3199,31 @@ function mapReuniaoEntradaDoBanco(en){
     
 async function loadData(){
     const raw = localStorage.getItem(CACHE_KEY);
+    const snapRaw = localStorage.getItem(SNAP_KEY);
     const t = Number(localStorage.getItem(CACHE_TIME_KEY) || 0);
+    const pendente = localStorage.getItem(PEND_KEY) === '1';
 
-    // Cache curto: 30s. Se o Supabase responder rápido, nem usa cache.
-    if(raw && t && (Date.now() - t < 30000)){
-        try { data = JSON.parse(raw); prepararDados(); return; } catch(e){}
+    // Usa o cache se: há alterações não gravadas (não podemos perdê-las) OU o cache tem < 30s
+    if(raw && snapRaw && (pendente || (t && Date.now() - t < 30000))){
+        try { data = JSON.parse(raw); snapshot = JSON.parse(snapRaw); prepararDados(); return; } catch(e){}
     }
 
     const remoto = await carregarDoSupabase();
     if(remoto){
         data = remoto;
         prepararDados();
+        reconstruirSnapshot();   // "o que o banco tem agora"
+        salvarSnapshot();
         cacheLocal();
         localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+        localStorage.removeItem(PEND_KEY);
         return;
     }
 
     // Fallback offline: última versão em cache
-    if(raw){ try { data = JSON.parse(raw); prepararDados(); } catch(e){} }
-    else   { cacheLocal(); }
+    if(raw){
+        try { data = JSON.parse(raw); snapshot = snapRaw ? JSON.parse(snapRaw) : {}; prepararDados(); } catch(e){}
+    } else { cacheLocal(); }
 }
 function prepararDados(){
     if(!data.eventos) data.eventos = [];
@@ -4036,37 +4237,14 @@ function novaNota(){
         if(t) t.focus();
     }, 50);
 }
-/* Remove um arquivo do repositório GitHub */
-async function githubDeleteFile(path){
+/* Remove um anexo do Supabase Storage.
+   Aceita o caminho antigo (img/notas-anexos/x) e converte para o novo (notas/x). */
+async function removerAnexo(path){
     if(!authToken) return false;
-    const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`;
-    try {
-        const r = await fetch(apiUrl + `?ref=${GITHUB_BRANCH}`, {
-            headers: { Authorization: `Bearer ${authToken}` }
-        });
-        if(!r.ok){
-            // Arquivo já não existe — considera sucesso
-            if(r.status === 404) return true;
-            return false;
-        }
-        const info = await r.json();
-        const del = await fetch(apiUrl, {
-            method: 'DELETE',
-            headers: {
-                Authorization: `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: `Remove anexo: ${path}`,
-                sha: info.sha,
-                branch: GITHUB_BRANCH
-            })
-        });
-        return del.ok;
-    } catch(e){
-        console.warn('Erro ao remover arquivo:', e);
-        return false;
-    }
+    const p = path.replace(/^img\/notas-anexos\//,'notas/').replace(/^img\/registros-anexos\//,'registros/');
+    const { error } = await sb.storage.from(STORAGE_BUCKET).remove([p]);
+    if(error){ console.warn('Erro ao remover arquivo:', error.message); return false; }
+    return true;
 }
 /* Detecta anexos que o usuário removeu do editor e oferece para excluir do GitHub */
 async function detectarAnexosRemovidos(){
@@ -4093,9 +4271,9 @@ async function detectarAnexosRemovidos(){
     const nomes = removidos.map(n => '• ' + n).join('\n');
     const pergunta =
         `Você removeu ${removidos.length} anexo(s) desta nota:\n\n${nomes}\n\n` +
-        `Deseja também EXCLUIR do repositório GitHub?\n\n` +
-        `OK = excluir do GitHub (recomendado)\n` +
-        `Cancelar = manter o arquivo no GitHub, mas parar de rastreá-lo`;
+        `Deseja também EXCLUIR do armazenamento?\n\n` +
+        `OK = excluir do armazenamento (recomendado)\n` +
+        `Cancelar = manter o arquivo, mas parar de rastreá-lo`;
 
     const excluir = confirm(pergunta);
 
@@ -4108,7 +4286,7 @@ async function detectarAnexosRemovidos(){
         }
         try {
             for(const f of removidos){
-                await githubDeleteFile(`img/notas-anexos/${f}`);
+                await removerAnexo(`img/notas-anexos/${f}`);
             }
         } finally {
             if(progress) progress.style.display = 'none';
@@ -4128,7 +4306,7 @@ async function notaExcluir(){
     let msg = 'Excluir esta nota?';
     const temAnexos = nota.anexos && nota.anexos.length > 0;
     if(temAnexos){
-        msg += `\n\nTambém serão excluídos ${nota.anexos.length} anexo(s) do repositório GitHub.`;
+        msg += `\n\nTambém serão excluídos ${nota.anexos.length} anexo(s) do armazenamento.`;
     }
     if(!confirm(msg)) return;
 
@@ -4142,13 +4320,13 @@ async function notaExcluir(){
         }
         try {
             for(const f of nota.anexos){
-                await githubDeleteFile(`img/notas-anexos/${f}`);
+                await removerAnexo(`img/notas-anexos/${f}`);
             }
         } finally {
             if(progress) progress.style.display = 'none';
         }
     } else if(temAnexos && !authToken){
-        console.warn('Sem token: anexos não foram removidos do GitHub.');
+        console.warn('Sem login: anexos não foram removidos.');
     }
 
     data.notas = data.notas.filter(n => n.id !== notaAtivaId);
@@ -4233,7 +4411,7 @@ function notaOnPaste(e){
                 reader.readAsDataURL(f);
             } else {
                 // Arquivo não-imagem: envia para o GitHub
-                notaUploadAnexoGitHub(f);
+                notaUploadAnexo(f);
             }
         }
         return;
@@ -5059,23 +5237,23 @@ function registroAnexarArquivo(){
         const file = input.files && input.files[0];
         if(!file) return;
         if(file.size > 5 * 1024 * 1024){
-            alert('Arquivo muito grande (máx. 5 MB).\nO GitHub aceita até ~25 MB via API, mas valores altos deixam o repositório pesado.');
+            alert('Arquivo muito grande (máx. 5 MB).');
             return;
         }
-        registroUploadAnexoGitHub(file);
+        registroUploadAnexo(file);
     };
     input.click();
 }
 
-async function registroUploadAnexoGitHub(file){
+async function registroUploadAnexo(file){
     if(!authToken){
-        alert('Para anexar arquivos é preciso estar logado como admin (Admin).\nSem o token, os arquivos não podem ser enviados para o repositório.');
+        alert('Para anexar arquivos é preciso estar logado como admin (Admin).\nSem login, os arquivos não podem ser enviados.');
         return;
     }
     const registro = registroEntradaAtiva();
     if(!registro) return;
 
-    const pasta = 'img/registros-anexos';
+    const pasta = 'registros';
     const agora = Date.now();
     const nomeLimpo = file.name
         .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
@@ -5090,36 +5268,9 @@ async function registroUploadAnexoGitHub(file){
     if(progressText){ progressText.textContent = `Enviando "${file.name}"…`; }
 
     try {
-        const base64 = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result.split(',')[1]);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
+        await storageUpload(caminho, file);
+        const urlRaw = storageUrl(caminho);
 
-        const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${caminho}`;
-        const body = { message: `Anexa arquivo no log: ${nomeFinal}`, content: base64, branch: GITHUB_BRANCH };
-
-        try {
-            const r = await fetch(apiUrl + `?ref=${GITHUB_BRANCH}`, {headers:{Authorization:`Bearer ${authToken}`}});
-            if(r.ok){
-                const info = await r.json();
-                if(info && info.sha) body.sha = info.sha;
-            }
-        } catch(e){}
-
-        const put = await fetch(apiUrl, {
-            method: 'PUT',
-            headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-
-        if(!put.ok){
-            const err = await put.json().catch(()=>({}));
-            throw new Error(err.message || ('HTTP ' + put.status));
-        }
-
-        const urlRaw = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${caminho}`;
         registro.anexosArquivos.push({ nome: file.name, url: urlRaw, arquivo: nomeFinal });
 
         registroSincronizarCamposEdicao();
@@ -5140,7 +5291,7 @@ async function registroRemoverAnexo(idx){
     if(!confirm(`Remover o anexo "${anexo.nome}"?`)) return;
 
     if(authToken && anexo.arquivo){
-        await githubDeleteFile(`img/registros-anexos/${anexo.arquivo}`);
+        await removerAnexo(`img/registros-anexos/${anexo.arquivo}`);
     }
 
     registro.anexosArquivos.splice(idx, 1);
@@ -6432,21 +6583,21 @@ function notaAnexarArquivo(){
         const file = input.files && input.files[0];
         if(!file) return;
         if(file.size > 5 * 1024 * 1024){
-            alert('Arquivo muito grande (máx. 5 MB).\nO GitHub aceita até ~25 MB via API, mas valores altos deixam o repositório pesado.');
+            alert('Arquivo muito grande (máx. 5 MB).');
             return;
         }
-        notaUploadAnexoGitHub(file);
+        notaUploadAnexo(file);
     };
     input.click();
 }
 
-async function notaUploadAnexoGitHub(file){
+async function notaUploadAnexo(file){
     if(!authToken){
-        alert('Para anexar arquivos é preciso estar logado como admin (Admin).\nSem o token, os arquivos não podem ser enviados para o repositório.');
+        alert('Para anexar arquivos é preciso estar logado como admin (Admin).\nSem login, os arquivos não podem ser enviados.');
         return;
     }
 
-    const pasta = 'img/notas-anexos';
+    const pasta = 'notas';
     const agora = Date.now();
     const nomeLimpo = file.name
         .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
@@ -6461,45 +6612,7 @@ async function notaUploadAnexoGitHub(file){
     if(progressText){ progressText.textContent = `Enviando "${file.name}"…`; }
 
     try {
-        const base64 = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const result = reader.result;
-                const b64 = result.split(',')[1];
-                resolve(b64);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-
-        const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${caminho}`;
-        const body = {
-            message: `Anexa arquivo na nota: ${nomeFinal}`,
-            content: base64,
-            branch: GITHUB_BRANCH
-        };
-
-        try {
-            const r = await fetch(apiUrl + `?ref=${GITHUB_BRANCH}`, {headers:{Authorization:`Bearer ${authToken}`}});
-            if(r.ok){
-                const info = await r.json();
-                if(info && info.sha) body.sha = info.sha;
-            }
-        } catch(e){}
-
-        const put = await fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-                Authorization: `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-        });
-
-        if(!put.ok){
-            const err = await put.json().catch(()=>({}));
-            throw new Error(err.message || ('HTTP ' + put.status));
-        }
+        await storageUpload(caminho, file);
 
         // Registra o anexo na nota
         const nota = data.notas.find(n => n.id === notaAtivaId);
@@ -6513,7 +6626,7 @@ async function notaUploadAnexoGitHub(file){
         if(editor){
             editor.focus();
             const isImg = file.type.startsWith('image/');
-            const urlRaw = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${caminho}`;
+            const urlRaw = storageUrl(caminho);
 
             let html;
             if(isImg){
@@ -7403,6 +7516,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     if(session){
     authUser = session.user;
     authToken = 'supabase';
+    if(localStorage.getItem(PEND_KEY) === '1'){ autosave.alteracoesPendentes = true; atualizarBotaoSalvar(); }
     }
 
     document.addEventListener('keydown', e=>{
@@ -7577,7 +7691,7 @@ function notaAddImagem(){
     const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
     input.onchange = function(){
         const f = input.files && input.files[0]; if(!f) return;
-        if(f.size > 500 * 1024){ mostrarToast('Imagem grande: enviando para o repositório…'); notaUploadAnexoGitHub(f); return; }
+        if(f.size > 500 * 1024){ mostrarToast('Imagem grande: enviando para o repositório…'); notaUploadAnexo(f); return; }
         const r = new FileReader();
         r.onload = ev => { const ed = document.getElementById('notaEditor'); if(!ed) return; ed.focus(); document.execCommand('insertHTML', false, `<img src="${ev.target.result}" alt="${escapeHtml(f.name)}">`); notaOnInput(); };
         r.readAsDataURL(f);
