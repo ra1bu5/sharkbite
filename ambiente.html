@@ -3630,72 +3630,40 @@ function renderAdminListas(){
                 <button class="btn-mini del" onclick="delArea(${i})">${ic('x',14)}</button>
             </div>
         </li>`).join('');
-}
+
+    /* === SETORES (agora DENTRO da função) === */
     const ls = document.getElementById('listaSetores');
+    if(ls){
+        ls.innerHTML = data.config.setores.length === 0
+            ? '<div class="admin-empty">Nenhum setor cadastrado.</div>'
+            : data.config.setores.map((s,i)=>`
+                <li>
+                    <span class="badge" style="${badgeStyle(s.cor)}">
+                        ${escapeHtml(s.label)}
+                    </span>
 
-if(ls){
-
-    ls.innerHTML =
-        data.config.setores.length === 0
-
-        ? '<div class="admin-empty">Nenhum setor cadastrado.</div>'
-
-        : data.config.setores.map((s,i)=>`
-
-            <li>
-
-                <span
-                    class="badge"
-                    style="${badgeStyle(s.cor)}"
-                >
-                    ${escapeHtml(s.label)}
-                </span>
-
-                <input
-                    type="text"
-                    class="item-label"
-                    value="${escapeHtml(s.label)}"
-                    onchange="editarSetorLabel(${i}, this.value)"
-                >
-
-                <input
-                    type="color"
-                    value="${escapeHtml(s.cor)}"
-                    onchange="editarSetorCor(${i}, this.value)"
-                >
-
-                <div class="item-actions">
-
-                    <button
-                        class="btn-mini up"
-                        onclick="moverSetor(${i}, -1)"
-                        ${i===0?'disabled':''}
+                    <input
+                        type="text"
+                        class="item-label"
+                        value="${escapeHtml(s.label)}"
+                        onchange="editarSetorLabel(${i}, this.value)"
                     >
-                        ↑
-                    </button>
 
-                    <button
-                        class="btn-mini down"
-                        onclick="moverSetor(${i}, 1)"
-                        ${i===data.config.setores.length-1?'disabled':''}
+                    <input
+                        type="color"
+                        value="${escapeHtml(s.cor)}"
+                        onchange="editarSetorCor(${i}, this.value)"
                     >
-                        ↓
-                    </button>
 
-                    <button
-                        class="btn-mini del"
-                        onclick="delSetor(${i})"
-                    >
-                        ${ic('x',14)}
-                    </button>
-
-                </div>
-
-            </li>
-
-        `).join('');
-
-}
+                    <div class="item-actions">
+                        <button class="btn-mini up" onclick="moverSetor(${i}, -1)" ${i===0?'disabled':''}>↑</button>
+                        <button class="btn-mini down" onclick="moverSetor(${i}, 1)" ${i===data.config.setores.length-1?'disabled':''}>↓</button>
+                        <button class="btn-mini del" onclick="delSetor(${i})">${ic('x',14)}</button>
+                    </div>
+                </li>
+            `).join('');
+    }
+}   // <-- A função agora fecha AQUI, englobando os setores
 function addTipo(){
     const label = document.getElementById('novoTipoLabel').value.trim();
     const cor = document.getElementById('novoTipoCor').value;
