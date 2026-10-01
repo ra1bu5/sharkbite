@@ -1648,7 +1648,7 @@
     .subbar .title-block h1 { font-size: clamp(24px, 3vw, 34px); }
     .datenav { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .datenav select { border: 1px solid var(--border-color-strong); background: var(--bg-panel-alt); color: var(--text-heading); font-family: var(--font-body); font-size: 14px; font-weight: 600; padding: 7px 8px; border-radius: var(--btn-radius); cursor: pointer; }
-    body[data-view=inbox] .datenav, body[data-view=notas] .datenav, body[data-view=notas] .filters, body[data-view=reunioes] .datenav, body[data-view=reunioes] .filters { display: none; }
+    body[data-view=inbox] .datenav, body[data-view=notas] .datenav, body[data-view=notas] .filters, body[data-view=reunioes] .datenav, body[data-view=reunioes] .filters, body[data-view=planoacao] .datenav, body[data-view=planoacao] .filters { display: none; }
     .calendar td.other-month { cursor: default; opacity: .7; }
     .event-chip, .day-card { box-shadow: 0 1px 2px rgba(11,42,74,.08); }
     #modalForm .modal { max-width: min(760px, 100% - 16px); }
@@ -1710,7 +1710,7 @@
     .appbar, .subbar, .filters, .legend { flex-shrink: 0; }
     .legend { margin: 6px 20px 12px; padding: 8px 12px; }
     body[data-view=quadro] #viewContainer { overflow: hidden; }
-    body[data-view=quadro] .datenav, body[data-view=quadro] .legend, body[data-view=notas] .legend, body[data-view=reunioes] .legend, body[data-view=registros] .legend { display: none; }
+    body[data-view=quadro] .datenav, body[data-view=quadro] .legend, body[data-view=notas] .legend, body[data-view=reunioes] .legend, body[data-view=registros] .legend, body[data-view=planoacao] .legend { display: none; }
     body[data-view=quadro].arrastando .inbox-dropzone { display: none; }
     .brand-name { font-size: 22px; }
     .btn-ic { display: inline-flex; align-items: center; gap: 6px; }
@@ -1791,7 +1791,8 @@
     /* respiro entre o cabeçalho e os conteúdos de Registros e Reuniões */
     body[data-view=registros] #viewContainer,
     body[data-view=notas] #viewContainer,
-    body[data-view=reunioes] #viewContainer {
+    body[data-view=reunioes] #viewContainer,
+    body[data-view=planoacao] #viewContainer {
         padding-top: 16px;
     }
 
@@ -1816,6 +1817,19 @@
 
     /* ===== Semana: menu no hover e "+" no dia ===== */
     .tab-wrap { position: relative; display: flex; }
+    .cat-wrap { position: relative; display: inline-flex; }
+    .cat-menu { display: none; position: absolute; top: 100%; left: 0; padding-top: 8px; z-index: 400; }
+    .cat-wrap:hover > .cat-menu, .cat-wrap:focus-within > .cat-menu { display: block; }
+    .cat-menu-box { min-width: 210px; padding: 5px; background: var(--bg-container); border: 1px solid var(--border-color-strong); border-radius: var(--radius); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 2px; }
+    .cat-menu-box > button, .subweek-menu button { display: flex; flex-direction: column; align-items: flex-start; width: 100%; padding: 8px 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text-heading); font: 600 14px var(--font-body); cursor: pointer; text-align: left; }
+    .cat-menu-box > button:hover, .subweek-menu button:hover { background: var(--bg-panel-dark); }
+    .cat-menu-box small, .subweek-menu small { font-weight: 400; font-size: 12px; color: var(--text-muted); }
+    .subweek-wrap { position: relative; }
+    .subweek-menu { display: none; position: absolute; left: 100%; top: -5px; padding-left: 8px; z-index: 410; }
+    .subweek-wrap:hover > .subweek-menu, .subweek-wrap:focus-within > .subweek-menu { display: block; }
+    .subweek-menu-box { min-width: 210px; padding: 5px; background: var(--bg-container); border: 1px solid var(--border-color-strong); border-radius: var(--radius); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 2px; }
+    .subweek-menu button.atual { background: var(--bg-panel-alt); box-shadow: inset 3px 0 0 var(--secondary); }
+    #catPlanejamento.active, #catOperacoes.active { background: var(--primary); color: var(--text-on-primary); }
     .tab-menu { display: none; position: absolute; top: 100%; left: 0; padding-top: 8px; z-index: 400; }
     .tab-wrap:hover .tab-menu, .tab-wrap:focus-within .tab-menu { display: block; }
     .tab-menu-box { min-width: 230px; padding: 5px; background: var(--bg-container); border: 1px solid var(--border-color-strong); border-radius: var(--radius); box-shadow: var(--shadow); }
@@ -1874,6 +1888,8 @@
         .tabs { order: 3; width: 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
         .tabs::-webkit-scrollbar { display: none; }
         .tab-wrap { flex: 0 0 auto; }
+        .cat-wrap { flex: 0 0 auto; }
+        .cat-menu, .subweek-menu { display: none !important; }
         .tabs .btn-toggle { flex: 0 0 auto; padding: 7px 12px; white-space: nowrap; }
         .tabs-sep { flex: 0 0 1px; }
         .tab-menu { display: none !important; }
@@ -2014,28 +2030,38 @@
 
     <header class="appbar">
         <div class="brand">
-            <a href="index.html" title="Voltar para os ambientes" style="display:flex"><img class="brand-logo" src="img/logo/logo_shark.png" alt="Sharkbite"></a>
-            <div><span class="brand-name">Sharkbite</span><span class="brand-sub" id="ambienteNome"></span></div>
+            <img class="brand-logo" src="img/logo/logo_shark.png" alt="Sharkbite">
+            <span class="brand-name">Sharkbite</span>
         </div>
         <nav class="tabs" aria-label="Visualizações">
-            <button class="btn btn-toggle" data-view="mes" onclick="setView('mes')">Mês</button>
-            <span class="tab-wrap">
-                <button class="btn btn-toggle" data-view="semana" onclick="setView('semana')">Semana</button>
-                <div class="tab-menu"><div class="tab-menu-box">
-                    <button data-modo="completa" onclick="setSemana('completa')">Semana<small>Domingo a sábado</small></button>
-                    <button data-modo="util" onclick="setSemana('util')">Semana de trabalho<small>Segunda a sexta</small></button>
+            <span class="cat-wrap">
+                <button class="btn btn-toggle" id="catPlanejamento" onclick="setView('mes')">Planejamento</button>
+                <div class="cat-menu"><div class="cat-menu-box">
+                    <button onclick="setView('mes')">Mês</button>
+                    <span class="subweek-wrap">
+                        <button onclick="setView('semana')">Semana</button>
+                        <div class="subweek-menu"><div class="subweek-menu-box">
+                            <button data-modo="completa" onclick="setSemana('completa'); setView('semana')">Semana completa<small>Domingo a sábado</small></button>
+                            <button data-modo="util" onclick="setSemana('util'); setView('semana')">Semana de trabalho<small>Segunda a sexta</small></button>
+                        </div></div>
+                    </span>
+                    <button onclick="setView('dia')">Dia</button>
+                    <button onclick="setView('quadro')">Quadro</button>
+                    <button onclick="setView('inbox')" title="Tarefas sem data">Inbox <span class="inbox-badge" id="inboxBadge" style="display:none;">0</span></button>
                 </div></div>
             </span>
-            <button class="btn btn-toggle" data-view="dia" onclick="setView('dia')">Dia</button>
-            <button class="btn btn-toggle" data-view="quadro" onclick="setView('quadro')">Quadro</button>
             <span class="tabs-sep"></span>
-            <button class="btn btn-toggle" data-view="inbox" onclick="setView('inbox')" title="Tarefas sem data">Inbox <span class="inbox-badge" id="inboxBadge" style="display:none;">0</span></button>
-            <button class="btn btn-toggle" data-view="notas" onclick="setView('notas')" title="Bloco de anotações">Notas</button>
-            <button class="btn btn-toggle" data-view="registros" onclick="setView('registros')" title="Histórico de modificações">Change Log</button>
-            <button class="btn btn-toggle" data-view="reunioes" onclick="setView('reunioes')" title="Atas de reunião">Reuniões</button>
+            <span class="cat-wrap">
+                <button class="btn btn-toggle" id="catOperacoes" onclick="setView('notas')">Central de Operações</button>
+                <div class="cat-menu"><div class="cat-menu-box">
+                    <button onclick="setView('notas')" title="Bloco de anotações">Notas</button>
+                    <button onclick="setView('registros')" title="Histórico de modificações">Change Log</button>
+                    <button onclick="setView('reunioes')" title="Atas de reunião">Reuniões</button>
+                    <button onclick="setView('planoacao')" title="Plano de ação">Plano de Ação</button>
+                </div></div>
+            </span>
         </nav>
         <div class="appbar-actions">
-            <a class="btn btn-ghost btn-ic" href="index.html" style="text-decoration:none" title="Voltar para a lista de ambientes">‹ Ambientes</a>
             <button class="btn btn-accent btn-ic" onclick="novoEventoHoje()" title="Criar novo item na tela atual"><span data-ic="plus"></span>Novo</button>
             <button class="btn btn-success" id="btnSalvar" onclick="salvarManual()">Salvar</button>
             <button class="btn btn-ghost btn-ic" id="btnTema" onclick="alternarTema()" title="Alternar tema claro/escuro"></button>
@@ -2362,16 +2388,14 @@ const SUPABASE_URL  = 'https://vaipqzmdsdanypuprxrk.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaXBxem1kc2RhbnlwdXByeHJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NDA0MTAsImV4cCI6MjEwNjExNjQxMH0.r5PBsVKPDDROHaBWbLpsnaezMmsdxc97pkm5205ji-c';
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-const AMBIENTE_ID = Number(new URLSearchParams(location.search).get('id')) || 0;
-const AMBIENTE_NOME_KEY = 'sharkbite_amb_nome_' + AMBIENTE_ID;
 
 // Só para LISTAR as imagens de img/background e img/user-photo (leitura pública, sem token)
 const GITHUB_OWNER = 'ra1bu5';
 const GITHUB_REPO  = 'sharkbite';
 const GITHUB_BRANCH = 'main';
 
-const CACHE_KEY      = 'planner_fgh_a' + AMBIENTE_ID;
-const CACHE_TIME_KEY = 'planner_fgh_time_a' + AMBIENTE_ID;
+const CACHE_KEY      = 'planner_fgh';
+const CACHE_TIME_KEY = 'planner_fgh_time';
 // TOKEN_KEY não é mais usado — o Supabase guarda a sessão sozinho
 const VIEW_KEY = 'planner_fgh_view';
 const CACHE_DURATION = 5 * 60 * 1000;
@@ -2559,8 +2583,8 @@ function getUserPhotoSrc(){ const f = data.config && data.config.userPhoto; if(f
    - A cada salvamento compara o estado atual com o snapshot e envia
      SÓ o que mudou (upsert) e o que foi apagado (delete).
 ============================================================ */
-const SNAP_KEY = 'planner_fgh_snap_a' + AMBIENTE_ID;
-const PEND_KEY = 'planner_fgh_pendente_a' + AMBIENTE_ID;   // '1' = há alterações ainda não gravadas no banco
+const SNAP_KEY = 'planner_fgh_snap';
+const PEND_KEY = 'planner_fgh_pendente';   // '1' = há alterações ainda não gravadas no banco
 const STORAGE_BUCKET = 'anexos';
 
 // data.config (camelCase) <-> tabela config (snake_case)
@@ -2602,7 +2626,6 @@ function montarLinhas(d){
 
     (d.eventos || []).forEach(e => {
         L.eventos[e.id] = {
-            ambiente_id: AMBIENTE_ID,
             id: e.id,
             data_inicio: e.dataInicio || null,
             data_fim: e.dataFim || null,
@@ -2622,7 +2645,6 @@ function montarLinhas(d){
     (d.notas || []).forEach(n => {
         if(!n.criadoEm) n.criadoEm = new Date().toISOString();
         L.notas[n.id] = {
-            ambiente_id: AMBIENTE_ID,
             id: n.id,
             titulo: n.titulo || '',
             conteudo: n.conteudo || '',
@@ -2635,7 +2657,6 @@ function montarLinhas(d){
 
     (d.registros || []).forEach(p => {
         L.registros_produtos[p.id] = {
-            ambiente_id: AMBIENTE_ID,
             id: p.id, nome: p.nome || '', cor: p.cor || 'var(--primary)',
             expandido: p.expandido !== false
         };
@@ -2653,7 +2674,6 @@ function montarLinhas(d){
 
     (d.reunioes || []).forEach(s => {
         L.reunioes_series[s.id] = {
-            ambiente_id: AMBIENTE_ID,
             id: s.id, nome: s.nome || '', cor: s.cor || '',
             expandido: s.expandido !== false
         };
@@ -3117,11 +3137,11 @@ async function carregarDoSupabase(){
         { data: reunioes,   error: e7 },
     ] = await Promise.all([
         sb.from('config').select('*'),
-        sb.from('eventos').select('*').eq('ambiente_id', AMBIENTE_ID).order('ordem'),
-        sb.from('notas').select('*').eq('ambiente_id', AMBIENTE_ID).order('criado_em'),
-        sb.from('registros_produtos').select('*').eq('ambiente_id', AMBIENTE_ID),
+        sb.from('eventos').select('*').order('ordem'),
+        sb.from('notas').select('*').order('criado_em'),
+        sb.from('registros_produtos').select('*'),
         sb.from('registros_entradas').select('*'),
-        sb.from('reunioes_series').select('*').eq('ambiente_id', AMBIENTE_ID),
+        sb.from('reunioes_series').select('*'),
         sb.from('reunioes_entradas').select('*'),
     ]);
 
@@ -3241,36 +3261,6 @@ function mapReuniaoEntradaDoBanco(en){
     };
 }
     
-/* ---------- Ambiente atual (vem da URL: ambiente.html?id=123) ---------- */
-function aplicarNomeAmbiente(nome){
-    const el = document.getElementById('ambienteNome'); if(el) el.textContent = nome;
-    document.title = nome + ' · Sharkbite';
-}
-async function carregarAmbiente(){
-    try {
-        const { data: row, error } = await sb.from('ambientes').select('id,nome,ativo').eq('id', AMBIENTE_ID).maybeSingle();
-        if(error) throw error;
-        if(!row) return null;
-        localStorage.setItem(AMBIENTE_NOME_KEY, row.nome);
-        aplicarNomeAmbiente(row.nome);
-        return row;
-    } catch(e){
-        console.warn('Não foi possível validar o ambiente:', e);
-        const nome = localStorage.getItem(AMBIENTE_NOME_KEY) || 'Ambiente';
-        aplicarNomeAmbiente(nome);
-        return { id: AMBIENTE_ID, nome };
-    }
-}
-/* Os ids dos eventos são gerados aqui no front e a chave primária é global:
-   começa depois do maior id de TODOS os ambientes, senão um evento novo
-   poderia sobrescrever o de outro ambiente. */
-async function ajustarNextIdGlobal(){
-    try {
-        const { data: rows, error } = await sb.from('eventos').select('id').order('id', { ascending: false }).limit(1);
-        if(!error && rows && rows.length) nextId = Math.max(nextId, Number(rows[0].id) + 1);
-    } catch(e){ console.warn('nextId global:', e); }
-}
-
 async function loadData(){
     const raw = localStorage.getItem(CACHE_KEY);
     const snapRaw = localStorage.getItem(SNAP_KEY);
@@ -3630,26 +3620,72 @@ function renderAdminListas(){
                 <button class="btn-mini del" onclick="delArea(${i})">${ic('x',14)}</button>
             </div>
         </li>`).join('');
+}
+    const ls = document.getElementById('listaSetores');
 
-  const lsSetores = document.getElementById('listaSetores');
-    if(lsSetores){
-        lsSetores.innerHTML = data.config.setores.length === 0
-            ? '<div class="admin-empty">Nenhum setor cadastrado.</div>'
-            : data.config.setores.map((s,i)=>`
-                <li>
-                    <span class="badge" style="${badgeStyle(s.cor)}">${escapeHtml(s.label)}</span>
-                    <input type="text" class="item-label" value="${escapeHtml(s.label)}" onchange="editarSetorLabel(${i}, this.value)">
-                    <input type="color" value="${escapeHtml(s.cor)}" onchange="editarSetorCor(${i}, this.value)">
-                    <div class="item-actions">
-                        <button class="btn-mini up" onclick="moverSetor(${i}, -1)" ${i===0?'disabled':''}>↑</button>
-                        <button class="btn-mini down" onclick="moverSetor(${i}, 1)" ${i===data.config.setores.length-1?'disabled':''}>↓</button>
-                        <button class="btn-mini del" onclick="delSetor(${i})">${ic('x',14)}</button>
-                    </div>
-                </li>
-            `).join('');
-    }
-}   // ← fecha renderAdminListas() DEPOIS dos setores
-    
+if(ls){
+
+    ls.innerHTML =
+        data.config.setores.length === 0
+
+        ? '<div class="admin-empty">Nenhum setor cadastrado.</div>'
+
+        : data.config.setores.map((s,i)=>`
+
+            <li>
+
+                <span
+                    class="badge"
+                    style="${badgeStyle(s.cor)}"
+                >
+                    ${escapeHtml(s.label)}
+                </span>
+
+                <input
+                    type="text"
+                    class="item-label"
+                    value="${escapeHtml(s.label)}"
+                    onchange="editarSetorLabel(${i}, this.value)"
+                >
+
+                <input
+                    type="color"
+                    value="${escapeHtml(s.cor)}"
+                    onchange="editarSetorCor(${i}, this.value)"
+                >
+
+                <div class="item-actions">
+
+                    <button
+                        class="btn-mini up"
+                        onclick="moverSetor(${i}, -1)"
+                        ${i===0?'disabled':''}
+                    >
+                        ↑
+                    </button>
+
+                    <button
+                        class="btn-mini down"
+                        onclick="moverSetor(${i}, 1)"
+                        ${i===data.config.setores.length-1?'disabled':''}
+                    >
+                        ↓
+                    </button>
+
+                    <button
+                        class="btn-mini del"
+                        onclick="delSetor(${i})"
+                    >
+                        ${ic('x',14)}
+                    </button>
+
+                </div>
+
+            </li>
+
+        `).join('');
+
+}
 function addTipo(){
     const label = document.getElementById('novoTipoLabel').value.trim();
     const cor = document.getElementById('novoTipoCor').value;
@@ -3974,6 +4010,8 @@ function render(){
     
     aplicarTamanhoView(); fecharPopDia(); marcarSemana();
     document.querySelectorAll('.btn-toggle').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+    const catPlan = document.getElementById('catPlanejamento'); if(catPlan) catPlan.classList.toggle('active', ['mes','semana','dia','quadro','inbox'].includes(view));
+    const catOps = document.getElementById('catOperacoes'); if(catOps) catOps.classList.toggle('active', ['notas','registros','reunioes','planoacao'].includes(view));
     const c = document.getElementById('viewContainer');
     if(view === 'mes') c.innerHTML = renderMes();
     else if(view === 'semana') c.innerHTML = renderSemana();
@@ -3982,6 +4020,7 @@ function render(){
     else if(view === 'notas') { renderNotas(); return; }
     else if(view === 'registros') { renderRegistros(); return; }
     else if(view === 'reunioes') { renderReunioes(); return; }
+    else if(view === 'planoacao') c.innerHTML = renderPlanoAcao();
     else c.innerHTML = renderQuadro();
     renderLegend();
     atualizarContadorFiltro();
@@ -7319,6 +7358,8 @@ function novoEventoHoje(){
     if(view === 'inbox'){ novoEventoInbox(); return; }
     if(view === 'notas'){ novaNota(); return; }
     if(view === 'reunioes'){ if(reuniaoSerieAtivaId){ novaReuniaoEntrada(reuniaoSerieAtivaId); } else { novaReuniaoSerie(); } return; }
+    if(view === 'registros'){ if(registroProdutoAtivoId){ novoRegistro(registroProdutoAtivoId); } else { novoRegistroProduto(); } return; }
+    if(view === 'planoacao'){ return; }
     diaSelecionado = dateKeyFromDate(currentDate); abrirFormEvento();
 }
 function toggleSemData(){
@@ -7680,11 +7721,7 @@ function excluirEventoForm(){
    INICIALIZAÇÃO
 ============================================================ */
 document.addEventListener('DOMContentLoaded', async ()=>{
-    if(!AMBIENTE_ID){ location.replace('index.html'); return; }
-    const amb = await carregarAmbiente();
-    if(!amb){ location.replace('index.html'); return; }
     await loadData();
-    await ajustarNextIdGlobal();
     aplicarTema();
     const pref = localStorage.getItem(VIEW_KEY);
     if(pref) view = (pref === 'lista' ? 'quadro' : pref);
@@ -8285,9 +8322,20 @@ function setSemana(modo){
 }
 function marcarSemana(){
     const modo = semanaUtil() ? 'util' : 'completa';
-    document.querySelectorAll('.tab-menu-box button').forEach(b => b.classList.toggle('atual', b.dataset.modo === modo));
+    document.querySelectorAll('.subweek-menu button').forEach(b => b.classList.toggle('atual', b.dataset.modo === modo));
 }
 function novoEventoNoDia(key){ diaSelecionado = key; abrirFormEvento(null, key); }
+
+/* ============================================================
+   PLANO DE AÇÃO — em construção
+============================================================ */
+function renderPlanoAcao(){
+    return `<div class="notas-vazio" style="margin:60px auto;max-width:420px;">
+        <p style="font-size:40px;margin:0 0 10px;">🚧</p>
+        <p style="font-size:16px;font-weight:700;color:var(--text-heading);margin:0 0 4px;">Em construção</p>
+        <p style="margin:0;">O Plano de Ação ainda está sendo desenhado. Em breve ele aparece aqui.</p>
+    </div>`;
+}
 
 /* ============================================================
    DESCRIÇÃO / CHECKLIST: recolher, reordenar e importar linhas
