@@ -2396,21 +2396,13 @@
     .plano-acao-etapa, .plano-acao-resp, .plano-acao-meta { flex: 0 0 auto; }
 }
 
-/* ---------- Lista de ações com altura fixa (≈ uma ação aberta) ---------- */
-.plano-acoes-lista {
-    height: min(380px, 55vh);
-    overflow-y: auto;
-    align-content: flex-start;
-    padding: 8px;
-    background: var(--bg-panel-dark);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
+/* ---------- Cartão da demanda: tamanho fixo ---------- */
+@media (min-width: 701px) {
+    #modalDemanda .modal {
+        width: min(900px, 100% - 16px);
+        height: min(92vh, 900px);
+    }
 }
-.plano-acao-card { flex-shrink: 0; }
-.plano-acoes-lista .plano-acoes-vazio {
-    margin: auto 0;
-    background: var(--bg-container);
-}    
     
 </style>
 </head>
@@ -7294,9 +7286,7 @@ function planoToggleAcao(acaoId){
     else planoAcoesAbertas.add(acaoId);
     renderPlanoAcoesModal();
     if(planoAcoesAbertas.has(acaoId)){
-        const card = document.querySelector(`.plano-acao-card[data-acao-id="${acaoId}"]`);   // novo
-        if(card) card.scrollIntoView({ block: 'nearest' });                                  // novo
-        const campo = card && card.querySelector('.plano-acao-nome');
+        const campo = document.querySelector(`.plano-acao-card[data-acao-id="${acaoId}"] .plano-acao-nome`);
         if(campo && !campo.value) campo.focus();
     }
 }
