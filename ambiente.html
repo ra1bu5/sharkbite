@@ -2004,6 +2004,81 @@
         .busca-bar select, .busca-input-wrap { flex: 1 1 100%; max-width: none; }
         .busca-bar .count { margin-left: 0; }
     }
+    /* ===== Categorias de abas (Planejamento / Central de Operações) ===== */
+.tabs .tab-wrap > .btn-toggle.ativo-grupo {
+    background: #fff;
+    color: var(--primary);
+    opacity: 1;
+}
+.tabs .tab-menu-box button.atual {
+    background: var(--bg-panel-alt);
+    box-shadow: inset 3px 0 0 var(--secondary);
+    font-weight: 700;
+}
+.tabs .tab-menu-box button .inbox-badge {
+    margin-left: 6px;
+}
+
+/* ===== View "Em construção" (Plano de Ação) ===== */
+.view-construcao {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 80px 24px;
+    text-align: center;
+    font-family: var(--font-body);
+    min-height: 50vh;
+}
+.view-construcao .icone {
+    font-size: 64px;
+    line-height: 1;
+    opacity: .8;
+}
+.view-construcao h2 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: clamp(20px, 3vw, 28px);
+    color: var(--text-heading);
+    letter-spacing: .5px;
+}
+.view-construcao p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 460px;
+}
+.view-construcao .hint {
+    font-size: 13px;
+    opacity: .8;
+}
+
+/* ===== Mobile: sem dropdown, tudo em linha rolável ===== */
+@media (max-width: 800px) {
+    .tabs .tab-wrap { position: static; }
+    .tabs .tab-wrap > .btn-toggle { display: none; }   /* esconde o rótulo da categoria */
+    .tabs .tab-menu {
+        display: block !important;
+        position: static;
+        padding-top: 0;
+    }
+    .tabs .tab-menu-box {
+        display: flex;
+        gap: 2px;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        min-width: 0;
+    }
+    .tabs .tab-menu-box button {
+        flex: 0 0 auto;
+        padding: 7px 12px;
+        white-space: nowrap;
+    }
+    .tabs .tab-menu-box button small { display: none; }
+}
 </style>
 </head>
 <body>
@@ -2018,21 +2093,31 @@
             <div><span class="brand-name">Sharkbite</span><span class="brand-sub" id="ambienteNome"></span></div>
         </div>
         <nav class="tabs" aria-label="Visualizações">
-            <button class="btn btn-toggle" data-view="mes" onclick="setView('mes')">Mês</button>
-            <span class="tab-wrap">
-                <button class="btn btn-toggle" data-view="semana" onclick="setView('semana')">Semana</button>
+        
+            <!-- ═══════════ CATEGORIA: PLANEJAMENTO ═══════════ -->
+            <span class="tab-wrap" data-grupo="planejamento">
+                <button class="btn btn-toggle" type="button">Planejamento</button>
                 <div class="tab-menu"><div class="tab-menu-box">
-                    <button data-modo="completa" onclick="setSemana('completa')">Semana<small>Domingo a sábado</small></button>
-                    <button data-modo="util" onclick="setSemana('util')">Semana de trabalho<small>Segunda a sexta</small></button>
+                    <button data-view="mes"    onclick="setView('mes')">Mês<small>Visão mensal</small></button>
+                    <button data-view="semana" data-modo="completa" onclick="setSemana('completa')">Semana<small>Domingo a sábado</small></button>
+                    <button data-view="semana" data-modo="util"     onclick="setSemana('util')">Semana de trabalho<small>Segunda a sexta</small></button>
+                    <button data-view="dia"    onclick="setView('dia')">Dia<small>Um dia por vez</small></button>
+                    <button data-view="quadro" onclick="setView('quadro')">Quadro<small>Kanban por status</small></button>
+                    <button data-view="inbox"  onclick="setView('inbox')">Inbox <span class="inbox-badge" id="inboxBadge" style="display:none;">0</span><small>Tarefas sem data</small></button>
                 </div></div>
             </span>
-            <button class="btn btn-toggle" data-view="dia" onclick="setView('dia')">Dia</button>
-            <button class="btn btn-toggle" data-view="quadro" onclick="setView('quadro')">Quadro</button>
-            <span class="tabs-sep"></span>
-            <button class="btn btn-toggle" data-view="inbox" onclick="setView('inbox')" title="Tarefas sem data">Inbox <span class="inbox-badge" id="inboxBadge" style="display:none;">0</span></button>
-            <button class="btn btn-toggle" data-view="notas" onclick="setView('notas')" title="Bloco de anotações">Notas</button>
-            <button class="btn btn-toggle" data-view="registros" onclick="setView('registros')" title="Histórico de modificações">Change Log</button>
-            <button class="btn btn-toggle" data-view="reunioes" onclick="setView('reunioes')" title="Atas de reunião">Reuniões</button>
+        
+            <!-- ═══════════ CATEGORIA: CENTRAL DE OPERAÇÕES ═══════════ -->
+            <span class="tab-wrap" data-grupo="central">
+                <button class="btn btn-toggle" type="button">Central de Operações</button>
+                <div class="tab-menu"><div class="tab-menu-box">
+                    <button data-view="notas"     onclick="setView('notas')">Notas<small>Bloco de anotações</small></button>
+                    <button data-view="registros" onclick="setView('registros')">Change Log<small>Histórico de modificações</small></button>
+                    <button data-view="reunioes"  onclick="setView('reunioes')">Reuniões<small>Atas de reunião</small></button>
+                    <button data-view="plano"     onclick="setView('plano')">Plano de Ação<small>Em construção</small></button>
+                </div></div>
+            </span>
+        
         </nav>
         <div class="appbar-actions">
             <a class="btn btn-ghost btn-ic" href="index.html" style="text-decoration:none" title="Voltar para a lista de ambientes">‹ Ambientes</a>
@@ -3971,7 +4056,13 @@ function render(){
         if(mostrar && buscaBar.style.display === 'none') registroBuscaConfigurarCampo();
         buscaBar.style.display = mostrar ? '' : 'none';
     }
-    
+
+    const filtersBar = document.getElementById('filtersBar');
+    if(filtersBar){
+        filtersBar.style.display =
+            (view === 'registros' || view === 'plano') ? 'none' : '';
+    }
+        
     aplicarTamanhoView(); fecharPopDia(); marcarSemana();
     document.querySelectorAll('.btn-toggle').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
     const c = document.getElementById('viewContainer');
@@ -3982,6 +4073,7 @@ function render(){
     else if(view === 'notas') { renderNotas(); return; }
     else if(view === 'registros') { renderRegistros(); return; }
     else if(view === 'reunioes') { renderReunioes(); return; }
+    else if(view === 'plano')    { c.innerHTML = renderPlano(); }
     else c.innerHTML = renderQuadro();
     renderLegend();
     atualizarContadorFiltro();
@@ -6414,6 +6506,20 @@ ${reunEditorHtml(
 
 }
 
+/* ============================================================
+   PLANO DE AÇÃO — placeholder (em construção)
+============================================================ */
+function renderPlano(){
+    return `
+        <div class="view-construcao">
+            <div class="icone">🚧</div>
+            <h2>Plano de Ação</h2>
+            <p>Em construção.</p>
+            <p class="hint">Esta seção estará disponível em breve.</p>
+        </div>
+    `;
+}
+    
 function reunListaHtml(arr, campo){
     if(!arr || !arr.length) return `<div class="task-checklist-empty">Nenhum item.</div>`;
     return arr.map((texto, idx) => `
@@ -7316,6 +7422,7 @@ function fecharModalDia(){ document.getElementById('modalDia').classList.remove(
    FORMULÁRIO
 ============================================================ */
 function novoEventoHoje(){
+    if(view === 'plano') return;                 // ← adicione esta linha
     if(view === 'inbox'){ novoEventoInbox(); return; }
     if(view === 'notas'){ novaNota(); return; }
     if(view === 'reunioes'){ if(reuniaoSerieAtivaId){ novaReuniaoEntrada(reuniaoSerieAtivaId); } else { novaReuniaoSerie(); } return; }
@@ -8283,9 +8390,43 @@ function setSemana(modo){
     document.activeElement && document.activeElement.blur();
     setView('semana');
 }
+/* Mapa: qual categoria cada view pertence */
+const CATEGORIA_POR_VIEW = {
+    mes: 'planejamento', semana: 'planejamento', dia: 'planejamento',
+    quadro: 'planejamento', inbox: 'planejamento',
+    notas: 'central', registros: 'central', reunioes: 'central', plano: 'central'
+};
+
 function marcarSemana(){
+    // (mantido por compatibilidade — agora delega para marcarMenus)
+    marcarMenus();
+}
+
+function marcarMenus(){
+    // Modo da semana (completa / util)
     const modo = semanaUtil() ? 'util' : 'completa';
-    document.querySelectorAll('.tab-menu-box button').forEach(b => b.classList.toggle('atual', b.dataset.modo === modo));
+    document.querySelectorAll('.tab-menu-box button[data-modo]').forEach(b => {
+        b.classList.toggle('atual', b.dataset.modo === modo);
+    });
+
+    // Item ativo dentro dos menus
+    document.querySelectorAll('.tab-menu-box button[data-view]').forEach(b => {
+        const ehSemana = b.dataset.view === 'semana';
+        const ativo = ehSemana
+            ? (b.dataset.view === view && b.dataset.modo === modo)
+            : (b.dataset.view === view);
+        b.classList.toggle('atual', ativo);
+    });
+
+    // Categoria pai ativa (se alguma view filha está aberta)
+    const categoriaAtiva = CATEGORIA_POR_VIEW[view];
+    document.querySelectorAll('.tabs > .tab-wrap').forEach(w => {
+        w.classList.toggle('ativo-grupo', w.dataset.grupo === categoriaAtiva);
+        // Também repassa "ativo" para o botão pai, para o CSS reagir
+        const btnPai = w.querySelector(':scope > .btn-toggle');
+        if(btnPai) btnPai.classList.toggle('ativo-grupo', w.dataset.grupo === categoriaAtiva);
+    });
+}
 }
 function novoEventoNoDia(key){ diaSelecionado = key; abrirFormEvento(null, key); }
 
