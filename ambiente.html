@@ -2079,6 +2079,14 @@
     }
     .tabs .tab-menu-box button small { display: none; }
 }
+
+/* ===== Inbox mesma linha ===== */
+ .tab-menu-box button .lbl-com-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 </style>
 </head>
 <body>
@@ -2097,19 +2105,20 @@
             <!-- ═══════════ CATEGORIA: PLANEJAMENTO ═══════════ -->
             <span class="tab-wrap" data-grupo="planejamento">
                 <button class="btn btn-toggle" type="button">Planejamento</button>
+                <button class="btn btn-toggle" type="button" onclick="this.blur()">Planejamento</button>
                 <div class="tab-menu"><div class="tab-menu-box">
                     <button data-view="mes"    onclick="setView('mes')">Mês<small>Visão mensal</small></button>
                     <button data-view="semana" data-modo="completa" onclick="setSemana('completa')">Semana<small>Domingo a sábado</small></button>
                     <button data-view="semana" data-modo="util"     onclick="setSemana('util')">Semana de trabalho<small>Segunda a sexta</small></button>
                     <button data-view="dia"    onclick="setView('dia')">Dia<small>Um dia por vez</small></button>
                     <button data-view="quadro" onclick="setView('quadro')">Quadro<small>Kanban por status</small></button>
-                    <button data-view="inbox"  onclick="setView('inbox')">Inbox <span class="inbox-badge" id="inboxBadge" style="display:none;">0</span><small>Tarefas sem data</small></button>
-                </div></div>
+            <button data-view="inbox"  onclick="setView('inbox')"><span class="lbl-com-badge">Inbox <span class="inbox-badge" id="inboxBadge" style="display:none;">0</span></span><small>Tarefas sem data</small></button>                </div></div>
             </span>
         
             <!-- ═══════════ CATEGORIA: CENTRAL DE OPERAÇÕES ═══════════ -->
             <span class="tab-wrap" data-grupo="central">
                 <button class="btn btn-toggle" type="button">Central de Operações</button>
+                <button class="btn btn-toggle" type="button" onclick="this.blur()">Central de Operações</button>
                 <div class="tab-menu"><div class="tab-menu-box">
                     <button data-view="notas"     onclick="setView('notas')">Notas<small>Bloco de anotações</small></button>
                     <button data-view="registros" onclick="setView('registros')">Change Log<small>Histórico de modificações</small></button>
