@@ -2426,11 +2426,279 @@
 
 /* Reforça o fechamento: some com o menu quando o wrapper perde o hover */
 .tabs:hover .tab-wrap:not(:hover) > .tab-menu { display: none; }
+
+/* ══════════════ MODAL DE AUTENTICAÇÃO ══════════════ */
+.auth-modal {
+    max-width: min(460px, 100% - 16px);
+    width: 100%;
+}
+.auth-modal h2 { margin-bottom: 6px; }
+.auth-sub {
+    margin: 0 0 18px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--text-muted);
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.auth-senha-wrap { position: relative; display: flex; align-items: center; }
+.auth-senha-wrap input { padding-right: 42px; }
+.auth-olho {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.auth-olho:hover { background: var(--bg-panel-dark); color: var(--text-heading); }
+
+.auth-linha-extra {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 14px;
+    flex-wrap: wrap;
+}
+.auth-link {
+    background: transparent;
+    border: 0;
+    color: var(--secondary);
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 6px;
+    border-radius: 4px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.auth-link:hover { color: var(--primary); background: var(--bg-panel-dark); }
+
+.auth-erro {
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border-radius: var(--radius-sm);
+    background: rgba(220,53,69,.10);
+    border: 1px solid rgba(220,53,69,.35);
+    color: var(--danger);
+    font-family: var(--font-body);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+/* Botão primário em estado de carregando */
+.btn.carregando { pointer-events: none; opacity: .7; position: relative; }
+.btn.carregando::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 8px;
+    border: 2px solid rgba(255,255,255,.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    vertical-align: middle;
+}
+
+/* ══════════════ MENU DO USUÁRIO ══════════════ */
+.user-menu {
+    display: none;
+    position: fixed;
+    min-width: 220px;
+    padding: 6px;
+    background: var(--bg-container);
+    border: 1px solid var(--border-color-strong);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 40px rgba(0,0,0,.25);
+    z-index: 2000;
+    font-family: var(--font-body);
+    font-size: 14px;
+}
+.user-menu.ativo { display: block; }
+.user-menu-email {
+    padding: 10px 12px;
+    font-weight: 700;
+    color: var(--text-heading);
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: .85;
+}
+.user-menu .separator {
+    height: 1px;
+    background: var(--border-color);
+    margin: 4px 6px;
+}
+.user-menu button {
+    display: block;
+    width: 100%;
+    padding: 9px 12px;
+    border: 0;
+    background: transparent;
+    color: var(--text-color);
+    text-align: left;
+    cursor: pointer;
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+}
+.user-menu button:hover { background: var(--bg-panel-dark); }
+.user-menu button.danger { color: var(--danger); }
+.user-menu button.danger:hover { background: rgba(220,53,69,.10); }
     
 </style>
 </head>
 <body>
 
+<!-- ══════════════ MODAL DE LOGIN ══════════════ -->
+<div class="modal-overlay" id="modalAuth" onclick="if(event.target===this) fecharAuth()">
+    <div class="modal auth-modal">
+
+        <!-- Etapa: LOGIN -->
+        <div id="authEtapaLogin">
+            <h2>Entrar</h2>
+            <p class="auth-sub">Acesso restrito a administradores.</p>
+
+            <div class="field">
+                <label for="authEmail">E-mail</label>
+                <input type="email" id="authEmail" autocomplete="username" placeholder="voce@exemplo.com">
+            </div>
+
+            <div class="field">
+                <label for="authSenha">Senha</label>
+                <div class="auth-senha-wrap">
+                    <input type="password" id="authSenha" autocomplete="current-password" placeholder="••••••••">
+                    <button type="button" class="auth-olho" onclick="authToggleSenha('authSenha', this)" title="Mostrar senha">👁</button>
+                </div>
+            </div>
+
+            <div class="auth-linha-extra">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="authLembrar">
+                    <span>Manter conectado</span>
+                </label>
+                <button type="button" class="auth-link" onclick="authIrPara('recuperar')">Esqueci a senha</button>
+            </div>
+
+            <div class="auth-erro" id="authErroLogin" style="display:none;"></div>
+
+            <div class="actions">
+                <button class="btn btn-secondary" onclick="fecharAuth()">Cancelar</button>
+                <button class="btn btn-primary" id="authBtnLogin" onclick="authLogin()">Entrar</button>
+            </div>
+        </div>
+
+        <!-- Etapa: RECUPERAR -->
+        <div id="authEtapaRecuperar" style="display:none;">
+            <h2>Recuperar senha</h2>
+            <p class="auth-sub">Enviaremos um link de redefinição para o seu e-mail.</p>
+
+            <div class="field">
+                <label for="authEmailRecup">E-mail</label>
+                <input type="email" id="authEmailRecup" placeholder="voce@exemplo.com">
+            </div>
+
+            <div class="auth-erro" id="authErroRecup" style="display:none;"></div>
+
+            <div class="actions">
+                <button class="btn btn-secondary left" onclick="authIrPara('login')">‹ Voltar</button>
+                <button class="btn btn-primary" id="authBtnRecup" onclick="authRecuperar()">Enviar link</button>
+            </div>
+        </div>
+
+        <!-- Etapa: TROCAR SENHA (logado) -->
+        <div id="authEtapaTrocar" style="display:none;">
+            <h2>Trocar senha</h2>
+            <p class="auth-sub">Defina uma nova senha para a sua conta.</p>
+
+            <div class="field">
+                <label for="authSenhaAtual">Senha atual</label>
+                <div class="auth-senha-wrap">
+                    <input type="password" id="authSenhaAtual" autocomplete="current-password">
+                    <button type="button" class="auth-olho" onclick="authToggleSenha('authSenhaAtual', this)">👁</button>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="authSenhaNova">Nova senha</label>
+                <div class="auth-senha-wrap">
+                    <input type="password" id="authSenhaNova" autocomplete="new-password">
+                    <button type="button" class="auth-olho" onclick="authToggleSenha('authSenhaNova', this)">👁</button>
+                </div>
+                <span class="hint">Mínimo 6 caracteres.</span>
+            </div>
+
+            <div class="field">
+                <label for="authSenhaConf">Confirmar nova senha</label>
+                <div class="auth-senha-wrap">
+                    <input type="password" id="authSenhaConf" autocomplete="new-password">
+                    <button type="button" class="auth-olho" onclick="authToggleSenha('authSenhaConf', this)">👁</button>
+                </div>
+            </div>
+
+            <div class="auth-erro" id="authErroTrocar" style="display:none;"></div>
+
+            <div class="actions">
+                <button class="btn btn-secondary left" onclick="fecharAuth()">Cancelar</button>
+                <button class="btn btn-primary" id="authBtnTrocar" onclick="authTrocarSenha()">Salvar nova senha</button>
+            </div>
+        </div>
+
+        <!-- Etapa: DEFINE NOVA SENHA (vinda do link de recuperação) -->
+        <div id="authEtapaReset" style="display:none;">
+            <h2>Definir nova senha</h2>
+            <p class="auth-sub">Você acessou por um link de recuperação. Escolha uma nova senha.</p>
+
+            <div class="field">
+                <label for="authResetNova">Nova senha</label>
+                <div class="auth-senha-wrap">
+                    <input type="password" id="authResetNova" autocomplete="new-password">
+                    <button type="button" class="auth-olho" onclick="authToggleSenha('authResetNova', this)">👁</button>
+                </div>
+                <span class="hint">Mínimo 6 caracteres.</span>
+            </div>
+
+            <div class="field">
+                <label for="authResetConf">Confirmar nova senha</label>
+                <div class="auth-senha-wrap">
+                    <input type="password" id="authResetConf" autocomplete="new-password">
+                    <button type="button" class="auth-olho" onclick="authToggleSenha('authResetConf', this)">👁</button>
+                </div>
+            </div>
+
+            <div class="auth-erro" id="authErroReset" style="display:none;"></div>
+
+            <div class="actions">
+                <button class="btn btn-primary" id="authBtnReset" onclick="authConfirmarReset()">Salvar</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ══════════════ MENU DO USUÁRIO (dropdown) ══════════════ -->
+<div class="user-menu" id="userMenu">
+    <div class="user-menu-email" id="userMenuEmail"></div>
+    <div class="separator"></div>
+    <button onclick="authAbrirTrocarSenha()">🔑 Trocar senha</button>
+    <button onclick="authLogout()" class="danger">🚪 Sair</button>
+</div>
+    
 <div class="container">
 
     
@@ -2471,8 +2739,20 @@
             <button class="btn btn-accent btn-ic" onclick="novoEventoHoje()" title="Criar novo item na tela atual"><span data-ic="plus"></span>Novo</button>
             <button class="btn btn-success" id="btnSalvar" onclick="salvarManual()">Salvar</button>
             <button class="btn btn-ghost btn-ic" id="btnTema" onclick="alternarTema()" title="Alternar tema claro/escuro"></button>
-            <button class="btn btn-ghost btn-ic" id="btnAdmin" onclick="abrirAdmin()" title="Configurações e administração"><span data-ic="sliders"></span>Admin</button>
-        </div>
+<!-- Mostra "Entrar" quando deslogado -->
+<button class="btn btn-ghost btn-ic" id="btnEntrar" onclick="abrirAuth('login')" title="Entrar como admin">
+    <span data-ic="user"></span>Entrar
+</button>
+
+<!-- Mostra o e-mail do usuário (escondido por padrão) -->
+<button class="btn btn-ghost btn-ic" id="btnUsuario" onclick="authToggleUserMenu(event)" title="Conta" style="display:none;">
+    <span data-ic="user"></span><span id="btnUsuarioLabel">—</span>
+</button>
+
+<!-- Admin continua, mas só funciona logado -->
+<button class="btn btn-ghost btn-ic" id="btnAdmin" onclick="abrirAdmin()" title="Configurações e administração" style="display:none;">
+    <span data-ic="sliders"></span>Admin
+</button>        </div>
     </header>
     <div class="filters" id="filtersBar">
         <span class="lbl">Filtros:</span>
@@ -8682,12 +8962,12 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     popularFiltros();
     render();
     atualizarBotaoSalvar();
-    // Restaura sessão do Supabase (se o usuário já estava logado)
-    const { data: { session } } = await sb.auth.getSession();
-    if(session){
-    authUser = session.user;
-    authToken = 'supabase';
-    if(localStorage.getItem(PEND_KEY) === '1'){ autosave.alteracoesPendentes = true; atualizarBotaoSalvar(); }
+
+    // Inicializa autenticação robusta
+    await authInit();
+    if(authUser && localStorage.getItem(PEND_KEY) === '1'){
+        autosave.alteracoesPendentes = true;
+        atualizarBotaoSalvar();
     }
 
     document.addEventListener('keydown', e=>{
@@ -8908,6 +9188,7 @@ function descHtml(ev){
 ============================================================ */
 const IC = {
     edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/>',
+    user: '<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',
     copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>',
     x: '<path d="M18 6L6 18M6 6l12 12"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
@@ -9504,6 +9785,360 @@ document.addEventListener('DOMContentLoaded', () => {
     const bar = document.getElementById('filtersBar'), l = bar && bar.querySelector('.lbl');
     if(l) l.addEventListener('click', () => bar.classList.toggle('filtros-abertos'));
 });
+
+/* ============================================================
+   AUTENTICAÇÃO ROBUSTA — Sharkbite
+   Substitui o antigo prompt() de e-mail/senha
+============================================================ */
+
+/* ---------- Config ---------- */
+const AUTH_MAX_TENTATIVAS = 5;                 // tentativas antes do bloqueio
+const AUTH_JANELA_MS      = 5 * 60 * 1000;     // janela do rate-limit (5 min)
+const AUTH_LS_KEY         = 'sharkbite_auth_tent';
+
+/* ---------- Estado ---------- */
+let authEtapaAtual = 'login';
+
+/* ---------- Rate limit (client-side) ---------- */
+function authLerTentativas(){
+    try { return JSON.parse(localStorage.getItem(AUTH_LS_KEY) || '[]'); } catch(e){ return []; }
+}
+function authSalvarTentativas(arr){
+    try { localStorage.setItem(AUTH_LS_KEY, JSON.stringify(arr)); } catch(e){}
+}
+function authLimparTentativas(){ try { localStorage.removeItem(AUTH_LS_KEY); } catch(e){} }
+function authBloqueadoAte(){
+    const agora = Date.now();
+    const tent = authLerTentativas().filter(t => agora - t < AUTH_JANELA_MS);
+    if(tent.length < AUTH_MAX_TENTATIVAS) return 0;
+    return tent[tent.length - 1] + AUTH_JANELA_MS;
+}
+function authRegistrarFalha(){
+    const tent = authLerTentativas().filter(t => Date.now() - t < AUTH_JANELA_MS);
+    tent.push(Date.now());
+    authSalvarTentativas(tent);
+}
+
+/* ---------- Mensagens amigáveis ---------- */
+function authMsgErro(erro){
+    const m = String((erro && erro.message) || erro || '').toLowerCase();
+    if(m.includes('invalid login') || m.includes('invalid credentials')) return 'E-mail ou senha inválidos.';
+    if(m.includes('email not confirmed'))  return 'Confirme seu e-mail antes de entrar.';
+    if(m.includes('rate limit'))           return 'Muitas tentativas. Aguarde alguns minutos.';
+    if(m.includes('network'))              return 'Falha de conexão. Verifique sua internet.';
+    if(m.includes('user not found'))       return 'E-mail não cadastrado.';
+    return 'Não foi possível entrar. Tente novamente.';
+}
+
+/* ---------- UI helpers ---------- */
+function authMostrarErro(id, msg){
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(!msg){ el.style.display = 'none'; el.textContent = ''; return; }
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+function authCarregando(btnId, on){
+    const btn = document.getElementById(btnId);
+    if(!btn) return;
+    btn.classList.toggle('carregando', !!on);
+    btn.disabled = !!on;
+}
+function authToggleSenha(inputId, btn){
+    const inp = document.getElementById(inputId);
+    if(!inp) return;
+    const mostrar = inp.type === 'password';
+    inp.type = mostrar ? 'text' : 'password';
+    btn.textContent = mostrar ? '🙈' : '👁';
+}
+function authIrPara(etapa){
+    authEtapaAtual = etapa;
+    const etapas = {
+        login:     'authEtapaLogin',
+        recuperar: 'authEtapaRecuperar',
+        trocar:    'authEtapaTrocar',
+        reset:     'authEtapaReset'
+    };
+    Object.entries(etapas).forEach(([k, id]) => {
+        const el = document.getElementById(id);
+        if(el) el.style.display = (k === etapa) ? '' : 'none';
+    });
+    ['authErroLogin','authErroRecup','authErroTrocar','authErroReset'].forEach(id => authMostrarErro(id, ''));
+    // Foco no primeiro campo visível
+    setTimeout(() => {
+        const foco = { login: 'authEmail', recuperar: 'authEmailRecup', trocar: 'authSenhaAtual', reset: 'authResetNova' }[etapa];
+        const el = foco && document.getElementById(foco);
+        if(el) el.focus();
+    }, 80);
+}
+
+/* ---------- Abrir / fechar modal ---------- */
+function abrirAuth(etapa){
+    authIrPara(etapa || 'login');
+    document.getElementById('modalAuth').classList.add('active');
+}
+function fecharAuth(){
+    document.getElementById('modalAuth').classList.remove('active');
+    // limpa campos sensíveis
+    ['authSenha','authSenhaAtual','authSenhaNova','authSenhaConf','authResetNova','authResetConf']
+        .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+}
+
+/* ---------- LOGIN ---------- */
+async function authLogin(){
+    authMostrarErro('authErroLogin', '');
+    const email = (document.getElementById('authEmail').value || '').trim();
+    const senha = document.getElementById('authSenha').value || '';
+    const lembrar = document.getElementById('authLembrar').checked;
+
+    if(!email || !senha){ authMostrarErro('authErroLogin', 'Preencha e-mail e senha.'); return; }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ authMostrarErro('authErroLogin', 'E-mail inválido.'); return; }
+
+    const bloqueio = authBloqueadoAte();
+    if(bloqueio){
+        const resta = Math.ceil((bloqueio - Date.now()) / 1000);
+        authMostrarErro('authErroLogin', `Muitas tentativas. Aguarde ${resta}s.`);
+        return;
+    }
+
+    authCarregando('authBtnLogin', true);
+    try {
+        const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+        if(error){ throw error; }
+        if(!data || !data.session){ throw new Error('Sessão não iniciada.'); }
+
+        authLimparTentativas();
+        authUser  = data.user;
+        authToken = 'supabase';
+
+        fecharAuth();
+        atualizarUIBotoesAuth();
+        mostrarToast('Bem-vindo(a), ' + (data.user.email || ''));
+
+        // Se havia alterações pendentes, tenta salvar
+        if(localStorage.getItem(PEND_KEY) === '1'){
+            autosave.alteracoesPendentes = true;
+            atualizarBotaoSalvar();
+        }
+    } catch(e){
+        authRegistrarFalha();
+        authMostrarErro('authErroLogin', authMsgErro(e));
+    } finally {
+        authCarregando('authBtnLogin', false);
+    }
+}
+
+/* ---------- RECUPERAR SENHA ---------- */
+async function authRecuperar(){
+    authMostrarErro('authErroRecup', '');
+    const email = (document.getElementById('authEmailRecup').value || '').trim();
+    if(!email){ authMostrarErro('authErroRecup', 'Informe o e-mail.'); return; }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ authMostrarErro('authErroRecup', 'E-mail inválido.'); return; }
+
+    authCarregando('authBtnRecup', true);
+    try {
+        const { error } = await sb.auth.resetPasswordForEmail(email, {
+            redirectTo: location.origin + location.pathname
+        });
+        if(error) throw error;
+        authMostrarErro('authErroRecup', '');
+        mostrarToast('Se o e-mail existir, enviamos o link de recuperação.');
+        fecharAuth();
+    } catch(e){
+        authMostrarErro('authErroRecup', 'Não foi possível enviar o link. Tente novamente.');
+    } finally {
+        authCarregando('authBtnRecup', false);
+    }
+}
+
+/* ---------- TROCAR SENHA (logado) ---------- */
+function authAbrirTrocarSenha(){
+    authFecharUserMenu();
+    if(!authUser){ abrirAuth('login'); return; }
+    abrirAuth('trocar');
+}
+async function authTrocarSenha(){
+    authMostrarErro('authErroTrocar', '');
+    const atual = document.getElementById('authSenhaAtual').value || '';
+    const nova  = document.getElementById('authSenhaNova').value  || '';
+    const conf  = document.getElementById('authSenhaConf').value  || '';
+
+    if(!atual || !nova || !conf){ authMostrarErro('authErroTrocar', 'Preencha todos os campos.'); return; }
+    if(nova.length < 6){ authMostrarErro('authErroTrocar', 'A nova senha precisa de ao menos 6 caracteres.'); return; }
+    if(nova !== conf){ authMostrarErro('authErroTrocar', 'As senhas não coincidem.'); return; }
+    if(nova === atual){ authMostrarErro('authErroTrocar', 'A nova senha deve ser diferente da atual.'); return; }
+
+    authCarregando('authBtnTrocar', true);
+    try {
+        // 1) Reautentica com a senha atual (evita troca sem confirmação)
+        const email = authUser.email;
+        const { error: errLogin } = await sb.auth.signInWithPassword({ email, password: atual });
+        if(errLogin) throw new Error('Senha atual incorreta.');
+
+        // 2) Atualiza para a nova senha
+        const { error: errUpd } = await sb.auth.updateUser({ password: nova });
+        if(errUpd) throw errUpd;
+
+        fecharAuth();
+        mostrarToast('Senha atualizada com sucesso!');
+    } catch(e){
+        authMostrarErro('authErroTrocar', e.message === 'Senha atual incorreta.'
+            ? 'Senha atual incorreta.'
+            : 'Não foi possível trocar a senha.');
+    } finally {
+        authCarregando('authBtnTrocar', false);
+    }
+}
+
+/* ---------- RESET (via link de recuperação) ---------- */
+async function authConfirmarReset(){
+    authMostrarErro('authErroReset', '');
+    const nova = document.getElementById('authResetNova').value || '';
+    const conf = document.getElementById('authResetConf').value || '';
+
+    if(!nova || !conf){ authMostrarErro('authErroReset', 'Preencha todos os campos.'); return; }
+    if(nova.length < 6){ authMostrarErro('authErroReset', 'Mínimo 6 caracteres.'); return; }
+    if(nova !== conf){ authMostrarErro('authErroReset', 'As senhas não coincidem.'); return; }
+
+    authCarregando('authBtnReset', true);
+    try {
+        const { error } = await sb.auth.updateUser({ password: nova });
+        if(error) throw error;
+        mostrarToast('Senha redefinida! Faça login.');
+        fecharAuth();
+        setTimeout(() => { sb.auth.signOut(); }, 800);
+    } catch(e){
+        authMostrarErro('authErroReset', 'Não foi possível redefinir a senha.');
+    } finally {
+        authCarregando('authBtnReset', false);
+    }
+}
+
+/* ---------- LOGOUT ---------- */
+async function authLogout(){
+    authFecharUserMenu();
+    if(!confirm('Sair do modo admin?')) return;
+
+    // Salva o que estiver pendente antes de sair
+    if(autosave.alteracoesPendentes){
+        try { await salvarAutomatico(); } catch(e){}
+    }
+    await sb.auth.signOut();
+    authUser = null;
+    authToken = '';
+    atualizarUIBotoesAuth();
+    mostrarToast('Você saiu.');
+    render();
+}
+/* Compatibilidade com o botão antigo do modal Admin */
+async function fazerLogout(){ return authLogout(); }
+
+/* ---------- UI do header ---------- */
+function atualizarUIBotoesAuth(){
+    const btnEntrar = document.getElementById('btnEntrar');
+    const btnUser   = document.getElementById('btnUsuario');
+    const btnAdmin  = document.getElementById('btnAdmin');
+    const label     = document.getElementById('btnUsuarioLabel');
+
+    if(authUser){
+        if(btnEntrar) btnEntrar.style.display = 'none';
+        if(btnUser)   btnUser.style.display   = '';
+        if(btnAdmin)  btnAdmin.style.display  = '';
+        if(label){
+            const email = authUser.email || '';
+            label.textContent = email.length > 18 ? email.slice(0, 15) + '…' : email;
+        }
+        const menuEmail = document.getElementById('userMenuEmail');
+        if(menuEmail) menuEmail.textContent = authUser.email || '';
+    } else {
+        if(btnEntrar) btnEntrar.style.display = '';
+        if(btnUser)   btnUser.style.display   = 'none';
+        if(btnAdmin)  btnAdmin.style.display  = 'none';
+    }
+}
+
+/* ---------- Dropdown do usuário ---------- */
+function authToggleUserMenu(ev){
+    ev && ev.stopPropagation();
+    const menu = document.getElementById('userMenu');
+    if(!menu) return;
+    const btn = document.getElementById('btnUsuario');
+    if(!btn) return;
+
+    if(menu.classList.contains('ativo')){ authFecharUserMenu(); return; }
+
+    const rc = btn.getBoundingClientRect();
+    menu.style.top  = (rc.bottom + 6) + 'px';
+    menu.style.left = Math.max(8, Math.min(rc.right - 220, innerWidth - 232)) + 'px';
+    menu.classList.add('ativo');
+}
+function authFecharUserMenu(){
+    const menu = document.getElementById('userMenu');
+    if(menu) menu.classList.remove('ativo');
+}
+document.addEventListener('click', e => {
+    if(!e.target.closest || !e.target.closest('#userMenu, #btnUsuario')) authFecharUserMenu();
+});
+
+/* ---------- Substitui o login antigo por prompt() ---------- */
+async function abrirLoginSupabase(){
+    const email = prompt('E-mail (admin):');
+    if(!email) return false;
+    const senha = prompt('Senha:');
+    if(!senha) return false;
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+    if(error){ alert('Login falhou: ' + error.message); return false; }
+
+    authUser  = data.user;
+    authToken = 'supabase';
+    return true;
+}
+
+/* ---------- Sessão inicial + listener de mudanças ---------- */
+async function authInit(){
+    // Detecta link de recuperação do Supabase (contém "type=recovery" na hash)
+    const hashParams = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+    const ehRecovery = hashParams.get('type') === 'recovery';
+
+    // Sessão já existente?
+    const { data: { session } } = await sb.auth.getSession();
+    if(session && session.user){
+        authUser  = session.user;
+        authToken = 'supabase';
+    }
+    atualizarUIBotoesAuth();
+
+    // Reage a qualquer mudança de autenticação (login, logout, refresh, multi-abas)
+    sb.auth.onAuthStateChange((evento, session) => {
+        if(session && session.user){
+            authUser  = session.user;
+            authToken = 'supabase';
+        } else {
+            authUser  = null;
+            authToken = '';
+        }
+        atualizarUIBotoesAuth();
+
+        if(evento === 'PASSWORD_RECOVERY'){
+            abrirAuth('reset');
+        }
+        if(evento === 'SIGNED_OUT'){
+            try { document.getElementById('modalAdmin')?.classList.remove('active'); } catch(e){}
+        }
+    });
+
+    if(ehRecovery){
+        abrirAuth('reset');
+    }
+}
+
+/* ---------- Limpa rate-limit ao fechar a aba (opcional) ---------- */
+window.addEventListener('beforeunload', () => {
+    // Se o usuário está logado, zera as tentativas
+    if(authUser) authLimparTentativas();
+});
+    
 </script>
 </body>
 </html>
