@@ -7087,7 +7087,6 @@ function abrirDetalheDemanda(id, focoTitulo){
     const d = planoDemandaAtiva();
     if(!d) return;
 
-    document.getElementById('planoFormId').value = d.id;
     document.getElementById('planoFormCodigo').textContent = d.codigo || '—';
     document.getElementById('planoFormDemanda').value = d.demanda || '';
     document.getElementById('planoFormSolicitante').value = d.solicitante || '';
@@ -7111,8 +7110,14 @@ function abrirDetalheDemanda(id, focoTitulo){
 }
 
 function fecharDetalheDemanda(){
+    const d = planoDemandaAtiva();
+    if(d && !d.demanda && !(d.acoes || []).length){
+        data.plano = data.plano.filter(x => x.id !== d.id);
+        marcarAlterado();
+    }
     planoDemandaAtivaId = null;
     document.getElementById('modalDemanda').classList.remove('active');
+    if(view === 'plano') renderPlano();
 }
 
 function planoAtualizarPctModal(){
