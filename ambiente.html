@@ -4058,7 +4058,6 @@ function render(){
     }
         
     aplicarTamanhoView(); fecharPopDia(); marcarSemana();
-    document.querySelectorAll('.btn-toggle').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
     const c = document.getElementById('viewContainer');
     if(view === 'mes') c.innerHTML = renderMes();
     else if(view === 'semana') c.innerHTML = renderSemana();
@@ -8420,7 +8419,6 @@ function marcarMenus(){
         const btnPai = w.querySelector(':scope > .btn-toggle');
         if(btnPai) btnPai.classList.toggle('ativo-grupo', w.dataset.grupo === categoriaAtiva);
     });
-}
 }
 function novoEventoNoDia(key){ diaSelecionado = key; abrirFormEvento(null, key); }
 
