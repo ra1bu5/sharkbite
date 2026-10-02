@@ -2499,7 +2499,7 @@
                    placeholder="Nome da demanda (ex.: Painel de vendas regional)"
                    onchange="planoSalvarDemandaForm()" oninput="planoSalvarDemandaForm()">
             <button class="btn btn-danger btn-mini" title="Excluir demanda"
-                    onclick="planoExcluirDemanda()" style="flex-shrink:0;">${ic('x',14)}</button>
+                    onclick="planoExcluirDemanda()" style="flex-shrink:0;">✕</button>
         </div>
 
         <div class="plano-modal-grid">
@@ -2536,7 +2536,7 @@
 
         <div class="plano-acoes-head">
             <h3>Ações</h3>
-            <button class="btn btn-secondary btn-mini" onclick="planoAdicionarAcao()">${ic('plus',13)} Ação</button>
+            <button class="btn btn-secondary btn-mini" onclick="planoAdicionarAcao()">+ Ação</button>
         </div>
 
         <div class="plano-acoes-wrap">
@@ -3056,6 +3056,22 @@ function montarLinhas(d){
             ambiente_id: AMBIENTE_ID,
             id: s.id, nome: s.nome || '', cor: s.cor || '',
             expandido: s.expandido !== false
+        };
+        (s.entradas || []).forEach(en => {
+            L.reunioes_entradas[en.id] = {
+                id: en.id, serie_id: s.id,
+                data: en.data || null,
+                data_hora: en.dataHora || '',
+                participantes: Array.isArray(en.participantes) ? en.participantes.join(', ') : (en.participantes || ''),
+                setor: en.setor || '',
+                pautas: en.pautas || [], pendencias: en.pendencias || [],
+                assuntos: en.assuntos || [], encaminhamentos: en.encaminhamentos || [],
+                pautas_html: en.pautasHtml || '', pendencias_html: en.pendenciasHtml || '',
+                assuntos_html: en.assuntosHtml || '', encaminhamentos_html: en.encaminhamentosHtml || ''
+            };
+        });
+    });
+
     (d.plano || []).forEach(dem => {
         L.plano_demandas[dem.id] = {
             ambiente_id: AMBIENTE_ID,
