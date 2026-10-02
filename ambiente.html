@@ -1815,9 +1815,29 @@
     .appbar { border-radius: 0; }
 
     /* ===== Semana: menu no hover e "+" no dia ===== */
-    .tab-wrap { position: relative; display: flex; }
-    .tab-menu { display: none; position: absolute; top: 100%; left: 0; padding-top: 8px; z-index: 400; }
-    .tab-wrap:hover .tab-menu, .tab-wrap:focus-within .tab-menu { display: block; }
+    .tab-wrap { position: relative; display: inline-flex; }
+    .tab-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        padding-top: 8px;
+        z-index: 400;
+    }
+    /* Abre só no hover real do botão — não usa focus-within (que "gruda" o menu) */
+    .tab-wrap:hover > .tab-menu { display: block; }
+    
+    /* Ponte invisível: mantém o menu aberto enquanto o mouse vai do botão pro menu */
+    .tab-wrap::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        height: 8px;
+        pointer-events: none;
+    }
+    .tab-wrap:hover::after { pointer-events: auto; }
     .tab-menu-box { min-width: 230px; padding: 5px; background: var(--bg-container); border: 1px solid var(--border-color-strong); border-radius: var(--radius); box-shadow: var(--shadow); }
     .tab-menu-box button { display: flex; flex-direction: column; align-items: flex-start; width: 100%; padding: 8px 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text-heading); font: 600 14px var(--font-body); cursor: pointer; text-align: left; }
     .tab-menu-box button small { font-weight: 400; font-size: 12px; color: var(--text-muted); }
@@ -2403,6 +2423,9 @@
         height: min(92vh, 900px);
     }
 }
+
+/* Reforça o fechamento: some com o menu quando o wrapper perde o hover */
+.tabs:hover .tab-wrap:not(:hover) > .tab-menu { display: none; }
     
 </style>
 </head>
