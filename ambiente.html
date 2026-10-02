@@ -2087,6 +2087,238 @@
     gap: 6px;
 }
 
+/* ============================================================
+   PLANO DE AÇÃO
+============================================================ */
+.plano-view {
+    padding: 16px clamp(12px, 2vw, 24px) 24px;
+    display: flex; flex-direction: column; gap: 14px;
+}
+
+.plano-topbar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 10px 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+}
+.plano-filtros {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    margin-left: auto;
+}
+.plano-filtros select {
+    border: 1px solid var(--border-color-strong);
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font: 600 13px var(--font-body);
+    padding: 5px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+.plano-count {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+    margin-left: 6px;
+}
+
+.plano-tabela-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-container);
+}
+.plano-tabela {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font: 500 14px var(--font-body);
+    table-layout: fixed;
+}
+.plano-tabela thead th {
+    position: sticky; top: 0;
+    background: var(--cal-head-bg);
+    color: var(--cal-head-text);
+    font: 700 11px var(--font-heading);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 10px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+.plano-tabela tbody tr {
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: background .12s;
+}
+.plano-tabela tbody tr:last-child { border-bottom: 0; }
+.plano-tabela tbody tr:hover { background: var(--bg-hover); }
+.plano-tabela td {
+    padding: 9px 10px;
+    vertical-align: middle;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.plano-tabela .plano-id {
+    font: 800 12px var(--font-mono);
+    color: var(--text-heading);
+    letter-spacing: .5px;
+}
+.plano-tabela .plano-demanda {
+    font-weight: 700;
+    color: var(--text-heading);
+}
+
+.plano-pct-mini {
+    display: inline-flex; align-items: center; gap: 6px;
+    justify-content: center;
+}
+.plano-pct-mini small {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    min-width: 30px; text-align: right;
+}
+.plano-pct-bar {
+    width: 60px; height: 6px;
+    background: var(--border-color);
+    border-radius: 99px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.plano-pct-bar > span {
+    display: block; height: 100%;
+    background: var(--secondary);
+    transition: width .2s;
+}
+.plano-pct-bar.big {
+    width: auto; flex: 1; height: 10px;
+}
+
+/* ---------- Modal de demanda ---------- */
+.plano-modal-head {
+    display: flex; align-items: center; gap: 12px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border-color);
+}
+.plano-codigo {
+    font: 800 14px var(--font-mono);
+    color: var(--text-muted);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 4px 10px;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+}
+.plano-titulo-input {
+    flex: 1;
+    font: 800 18px var(--font-heading);
+    color: var(--text-heading);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    min-width: 0;
+}
+.plano-titulo-input:focus {
+    outline: none;
+    background: var(--bg-panel-alt);
+    border-color: var(--border-color-strong);
+}
+
+.plano-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+    margin-bottom: 14px;
+}
+@media (max-width: 560px) {
+    .plano-modal-grid { grid-template-columns: 1fr; }
+}
+
+.plano-pct-modal {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+}
+.plano-pct-modal label {
+    font: 700 12px var(--font-heading);
+    color: var(--text-heading);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    flex-shrink: 0;
+}
+.plano-pct-modal #planoFormPct {
+    font: 800 16px var(--font-heading);
+    color: var(--text-heading);
+    min-width: 48px;
+    text-align: right;
+}
+
+.plano-acoes-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 6px 0 10px;
+}
+.plano-acoes-head h3 {
+    margin: 0;
+    font: 800 14px var(--font-heading);
+    color: var(--text-heading);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.plano-acoes-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-container);
+    max-height: 40vh;
+}
+.plano-acoes {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font: 500 13px var(--font-body);
+}
+.plano-acoes thead th {
+    position: sticky; top: 0;
+    background: var(--bg-panel-dark);
+    color: var(--text-heading);
+    font: 700 10px var(--font-heading);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 7px 6px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+.plano-acoes tbody td {
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+.plano-acoes tbody tr:last-child td { border-bottom: 0; }
+
+.plano-input {
+    width: 100%;
+    padding: 5px 7px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font: 500 13px var(--font-body);
+    box-sizing: border-box;
+}
+.plano-input:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: -1px;
+}
+    
 </style>
 </head>
 <body>
@@ -2104,7 +2336,6 @@
         
             <!-- ═══════════ CATEGORIA: PLANEJAMENTO ═══════════ -->
             <span class="tab-wrap" data-grupo="planejamento">
-                <button class="btn btn-toggle" type="button">Planejamento</button>
                 <button class="btn btn-toggle" type="button" onclick="this.blur()">Planejamento</button>
                 <div class="tab-menu"><div class="tab-menu-box">
                     <button data-view="mes"    onclick="setView('mes')">Mês<small>Visão mensal</small></button>
@@ -2117,7 +2348,6 @@
         
             <!-- ═══════════ CATEGORIA: CENTRAL DE OPERAÇÕES ═══════════ -->
             <span class="tab-wrap" data-grupo="central">
-                <button class="btn btn-toggle" type="button">Central de Operações</button>
                 <button class="btn btn-toggle" type="button" onclick="this.blur()">Central de Operações</button>
                 <div class="tab-menu"><div class="tab-menu-box">
                     <button data-view="notas"     onclick="setView('notas')">Notas<small>Bloco de anotações</small></button>
@@ -2260,6 +2490,81 @@
     </div>
 </div>
 
+<!-- Modal: Demanda (Plano de Ação) -->
+<div class="modal-overlay" id="modalDemanda" onclick="if(event.target===this && overlayDown) fecharDetalheDemanda()">
+    <div class="modal large">
+        <div class="plano-modal-head">
+            <span class="plano-codigo" id="planoFormCodigo">—</span>
+            <input type="text" id="planoFormDemanda" class="plano-titulo-input"
+                   placeholder="Nome da demanda (ex.: Painel de vendas regional)"
+                   onchange="planoSalvarDemandaForm()" oninput="planoSalvarDemandaForm()">
+            <button class="btn btn-danger btn-mini" title="Excluir demanda"
+                    onclick="planoExcluirDemanda()" style="flex-shrink:0;">${ic('x',14)}</button>
+        </div>
+
+        <div class="plano-modal-grid">
+            <div class="field"><label>Tipo</label><select id="planoFormTipo" onchange="planoSalvarDemandaForm()"></select></div>
+            <div class="field"><label>Porte</label><select id="planoFormPorte" onchange="planoSalvarDemandaForm()"></select></div>
+            <div class="field"><label>Prioridade</label><select id="planoFormPrioridade" onchange="planoSalvarDemandaForm()"></select></div>
+            <div class="field"><label>Status</label><select id="planoFormStatus" onchange="planoSalvarDemandaForm()"></select></div>
+            <div class="field"><label>Solicitante</label><input type="text" id="planoFormSolicitante" onchange="planoSalvarDemandaForm()" placeholder="Quem pediu"></div>
+            <div class="field"><label>Responsável</label><select id="planoFormResponsavel" onchange="planoSalvarDemandaForm()"></select></div>
+            <div class="field"><label>Data de entrada</label><input type="date" id="planoFormDataEntrada" onchange="planoSalvarDemandaForm()"></div>
+            <div class="field"><label>Prazo</label><input type="date" id="planoFormPrazo" onchange="planoSalvarDemandaForm()"></div>
+        </div>
+
+        <div class="plano-pct-modal">
+            <label>Progresso</label>
+            <div class="plano-pct-bar big"><span id="planoFormPctBar" style="width:0%"></span></div>
+            <span id="planoFormPct">0%</span>
+        </div>
+
+        <div class="plano-modal-grid">
+            <div class="field" style="grid-column:1/-1;">
+                <label>Próximo passo</label>
+                <input type="text" id="planoFormProximoPasso" onchange="planoSalvarDemandaForm()" placeholder="A coisa mais importante, numa linha">
+            </div>
+            <div class="field" style="grid-column:1/-1;">
+                <label>Bloqueio / Dependência</label>
+                <input type="text" id="planoFormBloqueio" onchange="planoSalvarDemandaForm()" placeholder="O que está travando">
+            </div>
+            <div class="field" style="grid-column:1/-1;">
+                <label>Link</label>
+                <input type="text" id="planoFormLink" onchange="planoSalvarDemandaForm()" placeholder="Pasta, painel, ticket, e-mail…">
+            </div>
+        </div>
+
+        <div class="plano-acoes-head">
+            <h3>Ações</h3>
+            <button class="btn btn-secondary btn-mini" onclick="planoAdicionarAcao()">${ic('plus',13)} Ação</button>
+        </div>
+
+        <div class="plano-acoes-wrap">
+            <table class="plano-acoes">
+                <thead>
+                    <tr>
+                        <th>Ação</th>
+                        <th style="width:140px;">Etapa</th>
+                        <th style="width:130px;">Responsável</th>
+                        <th style="width:120px;">Início</th>
+                        <th style="width:120px;">Prazo</th>
+                        <th style="width:110px;">Status</th>
+                        <th style="width:80px;">Est. (h)</th>
+                        <th style="width:80px;">Real (h)</th>
+                        <th>Observações</th>
+                        <th style="width:34px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="planoAcoesBody"></tbody>
+            </table>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="fecharDetalheDemanda()">Fechar</button>
+        </div>
+    </div>
+</div>
+    
 <!-- Modal Admin -->
 <div class="modal-overlay" id="modalAdmin" onclick="if(event.target===this && overlayDown) fecharAdmin()">
     <div class="modal large">
@@ -2583,7 +2888,8 @@ const DEFAULT_CONFIG = {
 let data = {
     config: JSON.parse(JSON.stringify(DEFAULT_CONFIG)),
     eventos: [],
-    registros: []
+    registros: [],
+    plano: []
 };
 let nextId = 1;
 let currentDate = new Date();
@@ -2664,7 +2970,7 @@ const configParaBanco = k => CONFIG_CHAVES[k] || k;
 const configDoBanco   = k => CONFIG_CHAVES_INV[k] || k;
 
 // Ordem respeita as chaves estrangeiras (pai antes do filho)
-const TABELAS = ['config','registros_produtos','reunioes_series','eventos','notas','registros_entradas','reunioes_entradas'];
+const TABELAS = ['config','registros_produtos','reunioes_series','plano_demandas','eventos','notas','registros_entradas','reunioes_entradas','plano_acoes'];
 const pkDe = t => t === 'config' ? 'chave' : 'id';
 
 let snapshot = {};
@@ -2750,21 +3056,43 @@ function montarLinhas(d){
             ambiente_id: AMBIENTE_ID,
             id: s.id, nome: s.nome || '', cor: s.cor || '',
             expandido: s.expandido !== false
+    (d.plano || []).forEach(dem => {
+        L.plano_demandas[dem.id] = {
+            ambiente_id: AMBIENTE_ID,
+            id: dem.id,
+            codigo: dem.codigo || '',
+            demanda: dem.demanda || '',
+            tipo: dem.tipo || '',
+            solicitante: dem.solicitante || '',
+            responsavel: dem.responsavel || '',
+            porte: dem.porte || 'M',
+            prioridade: dem.prioridade || 'Média',
+            status: dem.status || 'Backlog',
+            data_entrada: dem.dataEntrada || null,
+            prazo: dem.prazo || null,
+            proximo_passo: dem.proximoPasso || '',
+            bloqueio: dem.bloqueio || '',
+            link: dem.link || '',
+            ordem: dem.ordem || 0
         };
-        (s.entradas || []).forEach(en => {
-            L.reunioes_entradas[en.id] = {
-                id: en.id, serie_id: s.id,
-                data: en.data || null,
-                data_hora: en.dataHora || '',
-                participantes: Array.isArray(en.participantes) ? en.participantes.join(', ') : (en.participantes || ''),
-                setor: en.setor || '',
-                pautas: en.pautas || [], pendencias: en.pendencias || [],
-                assuntos: en.assuntos || [], encaminhamentos: en.encaminhamentos || [],
-                pautas_html: en.pautasHtml || '', pendencias_html: en.pendenciasHtml || '',
-                assuntos_html: en.assuntosHtml || '', encaminhamentos_html: en.encaminhamentosHtml || ''
+        (dem.acoes || []).forEach(ac => {
+            L.plano_acoes[ac.id] = {
+                id: ac.id,
+                demanda_id: dem.id,
+                acao: ac.acao || '',
+                etapa: ac.etapa || '',
+                responsavel: ac.responsavel || '',
+                inicio: ac.inicio || null,
+                prazo: ac.prazo || null,
+                status: ac.status || 'A fazer',
+                esforco_estimado: Number(ac.esforcoEstimado) || 0,
+                esforco_real: Number(ac.esforcoReal) || 0,
+                observacoes: ac.observacoes || '',
+                ordem: ac.ordem || 0
             };
         });
     });
+
     return L;
 }
 
@@ -3209,6 +3537,8 @@ async function carregarDoSupabase(){
         { data: entradas,   error: e5 },
         { data: series,     error: e6 },
         { data: reunioes,   error: e7 },
+        { data: demandas,   error: e8 },
+        { data: acoes,      error: e9 },
     ] = await Promise.all([
         sb.from('config').select('*'),
         sb.from('eventos').select('*').eq('ambiente_id', AMBIENTE_ID).order('ordem'),
@@ -3217,9 +3547,11 @@ async function carregarDoSupabase(){
         sb.from('registros_entradas').select('*'),
         sb.from('reunioes_series').select('*').eq('ambiente_id', AMBIENTE_ID),
         sb.from('reunioes_entradas').select('*'),
+        sb.from('plano_demandas').select('*').eq('ambiente_id', AMBIENTE_ID).order('ordem'),
+        sb.from('plano_acoes').select('*').order('ordem'),
     ]);
 
-    const err = e1 || e2 || e3 || e4 || e5 || e6 || e7;
+    const err = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9;
     if(err){ console.error('Erro ao carregar:', err); return null; }
 
     // Reconstrói config como objeto (era um chave/valor no banco)
@@ -3241,12 +3573,20 @@ async function carregarDoSupabase(){
             .map(mapReuniaoEntradaDoBanco)
     }));
 
+    const planoFinal = (demandas || []).map(dem => ({
+        ...mapDemandaDoBanco(dem),
+        acoes: (acoes || [])
+            .filter(a => a.demanda_id === dem.id)
+            .map(mapAcaoDoBanco)
+    }));
+
     return {
         config,
         eventos:   (eventos || []).map(mapEventoDoBanco),
         notas:     (notas   || []).map(mapNotaDoBanco),
         registros,
         reunioes:  reunioesFinal,
+        plano:     planoFinal,
     };
 }
 
@@ -3332,6 +3672,42 @@ function mapReuniaoEntradaDoBanco(en){
         pendenciasHtml: en.pendencias_html || '',
         assuntosHtml: en.assuntos_html || '',
         encaminhamentosHtml: en.encaminhamentos_html || '',
+    };
+}
+
+function mapDemandaDoBanco(d){
+    return {
+        id: d.id,
+        codigo: d.codigo || '',
+        demanda: d.demanda || '',
+        tipo: d.tipo || '',
+        solicitante: d.solicitante || '',
+        responsavel: d.responsavel || '',
+        porte: d.porte || 'M',
+        prioridade: d.prioridade || 'Média',
+        status: d.status || 'Backlog',
+        dataEntrada: d.data_entrada || '',
+        prazo: d.prazo || '',
+        proximoPasso: d.proximo_passo || '',
+        bloqueio: d.bloqueio || '',
+        link: d.link || '',
+        ordem: d.ordem || 0,
+    };
+}
+
+function mapAcaoDoBanco(a){
+    return {
+        id: a.id,
+        acao: a.acao || '',
+        etapa: a.etapa || '',
+        responsavel: a.responsavel || '',
+        inicio: a.inicio || '',
+        prazo: a.prazo || '',
+        status: a.status || 'A fazer',
+        esforcoEstimado: Number(a.esforco_estimado) || 0,
+        esforcoReal: Number(a.esforco_real) || 0,
+        observacoes: a.observacoes || '',
+        ordem: a.ordem || 0,
     };
 }
     
@@ -3422,6 +3798,14 @@ function prepararDados(){
         if(n.ordem === undefined) n.ordem = idx * 10;
     });
     if(!data.reunioes) data.reunioes = [];
+    if(!data.plano) data.plano = [];
+    data.plano.forEach(dem => {
+        if(!Array.isArray(dem.acoes)) dem.acoes = [];
+        dem.acoes.forEach(a => {
+            if(a.esforcoEstimado == null) a.esforcoEstimado = 0;
+            if(a.esforcoReal == null) a.esforcoReal = 0;
+        });
+    });
     data.reunioes.forEach(r => {
         if(!Array.isArray(r.entradas)) r.entradas = [];
         r.entradas.forEach(en => {
@@ -4058,7 +4442,7 @@ function render(){
     if(filtersBar){
         filtersBar.style.display =
             (view === 'registros' || view === 'plano') ? 'none' : '';
-    }
+    }    
     const buscaBar = document.getElementById('registroBuscaBar');
     if(buscaBar){
         const mostrar = view === 'registros';
@@ -4075,7 +4459,7 @@ function render(){
     else if(view === 'notas') { renderNotas(); return; }
     else if(view === 'registros') { renderRegistros(); return; }
     else if(view === 'reunioes') { renderReunioes(); return; }
-    else if(view === 'plano')    { c.innerHTML = renderPlano(); }
+    else if(view === 'plano')    { renderPlano(); return; }
     else c.innerHTML = renderQuadro();
     renderLegend();
     atualizarContadorFiltro();
@@ -6511,15 +6895,352 @@ ${reunEditorHtml(
 /* ============================================================
    PLANO DE AÇÃO — placeholder (em construção)
 ============================================================ */
+/* ============================================================
+   PLANO DE AÇÃO — Quadro de Demandas + Ações
+============================================================ */
+const PLANO_TIPOS = ['Painel','Análise','SQL/Query','Rotina admin','Reunião','Outro'];
+const PLANO_PORTES = [
+    { id:'P', label:'P', desc:'até 1 dia' },
+    { id:'M', label:'M', desc:'até 1 semana' },
+    { id:'G', label:'G', desc:'mais de 1 semana' }
+];
+const PLANO_PRIORIDADES = [
+    { id:'Alta',  cor:'#e53935' },
+    { id:'Média', cor:'#f5a623' },
+    { id:'Baixa', cor:'#4caf50' }
+];
+const PLANO_STATUS = [
+    { id:'Backlog',      cor:'#9e9e9e' },
+    { id:'Em análise',   cor:'#f5a623' },
+    { id:'Em andamento', cor:'#2196f3' },
+    { id:'Aguardando',   cor:'#9c27b0' },
+    { id:'Validação',    cor:'#0f9fb0' },
+    { id:'Concluído',    cor:'#1a9c4a' }
+];
+const PLANO_ETAPAS = ['Entendimento','Fontes','SQL / extração','Tratamento e modelagem','Construção','Validação','Entrega e treinamento','Pós-entrega'];
+const PLANO_ACAO_STATUS = ['A fazer','Fazendo','Feito','Bloqueada'];
+
+let planoFiltros = { status:'', prioridade:'', porte:'', tipo:'', responsavel:'' };
+let planoDemandaAtivaId = null;
+
+function planoCorPrioridade(p){ const x = PLANO_PRIORIDADES.find(y => y.id === p); return x ? x.cor : '#888'; }
+function planoCorStatus(s){ const x = PLANO_STATUS.find(y => y.id === s); return x ? x.cor : '#888'; }
+function planoBadge(cor, label, title){
+    return `<span class="badge" style="${badgeStyle(cor)}" title="${escapeHtml(title||label)}">${escapeHtml(label)}</span>`;
+}
+function planoPct(dem){
+    const acoes = Array.isArray(dem.acoes) ? dem.acoes : [];
+    if(!acoes.length) return dem.status === 'Concluído' ? 100 : 0;
+    const feitas = acoes.filter(a => a.status === 'Feito').length;
+    return Math.round((feitas / acoes.length) * 100);
+}
+function planoDemandaAtiva(){ return data.plano.find(d => d.id === planoDemandaAtivaId) || null; }
+function planoProximoCodigo(){
+    let max = 0;
+    data.plano.forEach(d => {
+        const m = String(d.codigo || '').match(/^D-(\d+)$/);
+        if(m) max = Math.max(max, Number(m[1]));
+    });
+    return 'D-' + String(max + 1).padStart(3,'0');
+}
+function planoDemandasFiltradas(){
+    return data.plano.filter(d => {
+        if(planoFiltros.status     && d.status     !== planoFiltros.status)     return false;
+        if(planoFiltros.prioridade && d.prioridade !== planoFiltros.prioridade) return false;
+        if(planoFiltros.porte      && d.porte      !== planoFiltros.porte)      return false;
+        if(planoFiltros.tipo       && d.tipo       !== planoFiltros.tipo)       return false;
+        if(planoFiltros.responsavel && d.responsavel !== planoFiltros.responsavel) return false;
+        return true;
+    }).sort((a,b) => (a.ordem||0) - (b.ordem||0) || a.id - b.id);
+}
+
 function renderPlano(){
-    return `
-        <div class="view-construcao">
-            <div class="icone">🚧</div>
-            <h2>Plano de Ação</h2>
-            <p>Em construção.</p>
-            <p class="hint">Esta seção estará disponível em breve.</p>
+    const c = document.getElementById('viewContainer');
+
+    const lista = planoDemandasFiltradas();
+    const total = data.plano.length;
+
+    const optStatus = '<option value="">Status: todos</option>' + PLANO_STATUS.map(s =>
+        `<option value="${escapeHtml(s.id)}" ${planoFiltros.status===s.id?'selected':''}>${escapeHtml(s.id)}</option>`).join('');
+    const optPrio = '<option value="">Prioridade: todas</option>' + PLANO_PRIORIDADES.map(p =>
+        `<option value="${escapeHtml(p.id)}" ${planoFiltros.prioridade===p.id?'selected':''}>${escapeHtml(p.id)}</option>`).join('');
+    const optPorte = '<option value="">Porte: todos</option>' + PLANO_PORTES.map(p =>
+        `<option value="${escapeHtml(p.id)}" ${planoFiltros.porte===p.id?'selected':''}>${escapeHtml(p.id)}</option>`).join('');
+    const optTipo = '<option value="">Tipo: todos</option>' + PLANO_TIPOS.map(t =>
+        `<option value="${escapeHtml(t)}" ${planoFiltros.tipo===t?'selected':''}>${escapeHtml(t)}</option>`).join('');
+    const optResp = '<option value="">Resp: todos</option>' + (data.config.responsaveis||[]).map(r =>
+        `<option value="${escapeHtml(r.label)}" ${planoFiltros.responsavel===r.label?'selected':''}>${escapeHtml(r.label)}</option>`).join('');
+
+    const linhas = lista.length === 0
+        ? `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:30px;font-style:italic;">
+             ${total === 0 ? 'Nenhuma demanda ainda. Clique em "+ Nova demanda" para começar.' : 'Nenhuma demanda corresponde aos filtros.'}
+           </td></tr>`
+        : lista.map(d => {
+            const pct = planoPct(d);
+            const nAcoes = (d.acoes||[]).length;
+            const prazoFmt = d.prazo ? fmtBR(d.prazo) : '—';
+            return `<tr data-id="${d.id}" onclick="abrirDetalheDemanda(${d.id})">
+                <td class="plano-id">${escapeHtml(d.codigo || '—')}</td>
+                <td class="plano-demanda">${escapeHtml(d.demanda || 'Sem título')}</td>
+                <td>${escapeHtml(d.tipo || '—')}</td>
+                <td>${d.responsavel ? `<span class="badge badge-resp" style="${badgeStyle(getRespCor(d.responsavel))}">@${escapeHtml(d.responsavel)}</span>` : '—'}</td>
+                <td style="text-align:center;">${planoBadge(d.porte==='P'?'#22a06b':d.porte==='G'?'#f07a1a':'#2196f3', d.porte || '—', 'Porte')}</td>
+                <td style="text-align:center;">${d.prioridade ? planoBadge(planoCorPrioridade(d.prioridade), d.prioridade, 'Prioridade') : '—'}</td>
+                <td>${d.status ? planoBadge(planoCorStatus(d.status), d.status, 'Status') : '—'}</td>
+                <td style="text-align:center;white-space:nowrap;">${prazoFmt}</td>
+                <td style="text-align:center;">
+                    <div class="plano-pct-mini" title="${pct}% concluído${nAcoes ? ' · ' + nAcoes + ' ação(ões)' : ''}">
+                        <div class="plano-pct-bar"><span style="width:${pct}%"></span></div>
+                        <small>${pct}%</small>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+
+    c.innerHTML = `
+        <div class="plano-view">
+            <div class="plano-topbar">
+                <button class="btn btn-primary" onclick="novaDemanda()">
+                    ${ic('plus', 14)} Nova demanda
+                </button>
+                <div class="plano-filtros">
+                    <select onchange="planoSetFiltro('status', this.value)">${optStatus}</select>
+                    <select onchange="planoSetFiltro('prioridade', this.value)">${optPrio}</select>
+                    <select onchange="planoSetFiltro('porte', this.value)">${optPorte}</select>
+                    <select onchange="planoSetFiltro('tipo', this.value)">${optTipo}</select>
+                    <select onchange="planoSetFiltro('responsavel', this.value)">${optResp}</select>
+                    <button class="btn btn-mini" style="background:var(--filter-text);color:var(--filter-bg);"
+                            onclick="planoLimparFiltros()">Limpar</button>
+                    <span class="plano-count">${lista.length} de ${total}</span>
+                </div>
+            </div>
+
+            <div class="plano-tabela-wrap">
+                <table class="plano-tabela">
+                    <thead>
+                        <tr>
+                            <th style="width:70px;">ID</th>
+                            <th>Demanda</th>
+                            <th style="width:110px;">Tipo</th>
+                            <th style="width:140px;">Responsável</th>
+                            <th style="width:60px;text-align:center;">Porte</th>
+                            <th style="width:90px;text-align:center;">Prioridade</th>
+                            <th style="width:130px;">Status</th>
+                            <th style="width:90px;text-align:center;">Prazo</th>
+                            <th style="width:110px;text-align:center;">% Concl.</th>
+                        </tr>
+                    </thead>
+                    <tbody>${linhas}</tbody>
+                </table>
+            </div>
         </div>
     `;
+}
+
+function planoSetFiltro(k, v){ planoFiltros[k] = v; renderPlano(); }
+function planoLimparFiltros(){ planoFiltros = { status:'', prioridade:'', porte:'', tipo:'', responsavel:'' }; renderPlano(); }
+
+/* ---------- Modal de detalhe / criação ---------- */
+function novaDemanda(){
+    const id = Date.now();
+    const nova = {
+        id,
+        codigo: planoProximoCodigo(),
+        demanda: '',
+        tipo: '',
+        solicitante: '',
+        responsavel: '',
+        porte: 'M',
+        prioridade: 'Média',
+        status: 'Backlog',
+        dataEntrada: dateKeyFromDate(new Date()),
+        prazo: '',
+        proximoPasso: '',
+        bloqueio: '',
+        link: '',
+        ordem: id,
+        acoes: []
+    };
+    data.plano.push(nova);
+    marcarAlterado();
+    abrirDetalheDemanda(id, true);
+}
+
+function abrirDetalheDemanda(id, focoTitulo){
+    planoDemandaAtivaId = id;
+    const d = planoDemandaAtiva();
+    if(!d) return;
+
+    document.getElementById('planoFormId').value = d.id;
+    document.getElementById('planoFormCodigo').textContent = d.codigo || '—';
+    document.getElementById('planoFormDemanda').value = d.demanda || '';
+    document.getElementById('planoFormSolicitante').value = d.solicitante || '';
+    document.getElementById('planoFormDataEntrada').value = d.dataEntrada || '';
+    document.getElementById('planoFormPrazo').value = d.prazo || '';
+    document.getElementById('planoFormProximoPasso').value = d.proximoPasso || '';
+    document.getElementById('planoFormBloqueio').value = d.bloqueio || '';
+    document.getElementById('planoFormLink').value = d.link || '';
+
+    preencherSelect('planoFormTipo', PLANO_TIPOS, d.tipo || '');
+    preencherSelect('planoFormPorte', PLANO_PORTES.map(p=>({value:p.id,label:p.label+' — '+p.desc})), d.porte || 'M');
+    preencherSelect('planoFormPrioridade', PLANO_PRIORIDADES.map(p=>({value:p.id,label:p.id})), d.prioridade || 'Média');
+    preencherSelect('planoFormStatus', PLANO_STATUS.map(s=>({value:s.id,label:s.id})), d.status || 'Backlog');
+    preencherSelect('planoFormResponsavel', ['', ...(data.config.responsaveis||[]).map(r=>r.label)], d.responsavel || '');
+
+    renderPlanoAcoesModal();
+    planoAtualizarPctModal();
+
+    document.getElementById('modalDemanda').classList.add('active');
+    if(focoTitulo) setTimeout(() => document.getElementById('planoFormDemanda').focus(), 80);
+}
+
+function fecharDetalheDemanda(){
+    planoDemandaAtivaId = null;
+    document.getElementById('modalDemanda').classList.remove('active');
+}
+
+function planoAtualizarPctModal(){
+    const d = planoDemandaAtiva();
+    if(!d) return;
+    const pct = planoPct(d);
+    const el = document.getElementById('planoFormPct');
+    if(el) el.textContent = pct + '%';
+    const bar = document.getElementById('planoFormPctBar');
+    if(bar) bar.style.width = pct + '%';
+}
+
+/* ---------- Ações (nível 2) ---------- */
+function renderPlanoAcoesModal(){
+    const root = document.getElementById('planoAcoesBody');
+    if(!root) return;
+    const d = planoDemandaAtiva();
+    if(!d) return;
+
+    if(!d.acoes.length){
+        root.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px;font-style:italic;">
+            Nenhuma ação ainda. Clique em <b>+ Ação</b> para detalhar o plano.
+        </td></tr>`;
+        return;
+    }
+    root.innerHTML = d.acoes.map(a => `
+        <tr data-acao-id="${a.id}">
+            <td><input type="text" class="plano-input" value="${escapeHtml(a.acao||'')}"
+                       onchange="planoAcaoSet(${a.id}, 'acao', this.value)"></td>
+            <td>
+                <select class="plano-input" onchange="planoAcaoSet(${a.id}, 'etapa', this.value)">
+                    <option value="">—</option>
+                    ${PLANO_ETAPAS.map(e => `<option value="${escapeHtml(e)}" ${a.etapa===e?'selected':''}>${escapeHtml(e)}</option>`).join('')}
+                </select>
+            </td>
+            <td>
+                <select class="plano-input" onchange="planoAcaoSet(${a.id}, 'responsavel', this.value)">
+                    <option value="">—</option>
+                    ${(data.config.responsaveis||[]).map(r => `<option value="${escapeHtml(r.label)}" ${a.responsavel===r.label?'selected':''}>${escapeHtml(r.label)}</option>`).join('')}
+                </select>
+            </td>
+            <td><input type="date" class="plano-input" value="${escapeHtml(a.inicio||'')}"
+                       onchange="planoAcaoSet(${a.id}, 'inicio', this.value)"></td>
+            <td><input type="date" class="plano-input" value="${escapeHtml(a.prazo||'')}"
+                       onchange="planoAcaoSet(${a.id}, 'prazo', this.value)"></td>
+            <td>
+                <select class="plano-input" onchange="planoAcaoSet(${a.id}, 'status', this.value)">
+                    ${PLANO_ACAO_STATUS.map(s => `<option value="${escapeHtml(s)}" ${a.status===s?'selected':''}>${escapeHtml(s)}</option>`).join('')}
+                </select>
+            </td>
+            <td><input type="number" step="0.5" min="0" class="plano-input" style="width:70px;"
+                       value="${escapeHtml(String(a.esforcoEstimado||0))}"
+                       onchange="planoAcaoSet(${a.id}, 'esforcoEstimado', this.value)"></td>
+            <td><input type="number" step="0.5" min="0" class="plano-input" style="width:70px;"
+                       value="${escapeHtml(String(a.esforcoReal||0))}"
+                       onchange="planoAcaoSet(${a.id}, 'esforcoReal', this.value)"></td>
+            <td><input type="text" class="plano-input" value="${escapeHtml(a.observacoes||'')}"
+                       onchange="planoAcaoSet(${a.id}, 'observacoes', this.value)"></td>
+            <td>
+                <button type="button" class="btn-mini del" title="Excluir ação"
+                        onclick="planoExcluirAcao(${a.id})">${ic('x',13)}</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function planoAdicionarAcao(){
+    const d = planoDemandaAtiva();
+    if(!d) return;
+    d.acoes.push({
+        id: Date.now() + Math.floor(Math.random()*1000),
+        acao: '',
+        etapa: '',
+        responsavel: '',
+        inicio: '',
+        prazo: '',
+        status: 'A fazer',
+        esforcoEstimado: 0,
+        esforcoReal: 0,
+        observacoes: '',
+        ordem: (d.acoes.length + 1) * 10
+    });
+    marcarAlterado();
+    renderPlanoAcoesModal();
+    planoAtualizarPctModal();
+    setTimeout(() => {
+        const rows = document.querySelectorAll('#planoAcoesBody tr');
+        const last = rows[rows.length - 1];
+        if(last) last.querySelector('input')?.focus();
+    }, 40);
+}
+
+function planoAcaoSet(acaoId, campo, valor){
+    const d = planoDemandaAtiva();
+    if(!d) return;
+    const a = d.acoes.find(x => x.id === acaoId);
+    if(!a) return;
+    if(campo === 'esforcoEstimado' || campo === 'esforcoReal'){
+        a[campo] = Number(valor) || 0;
+    } else {
+        a[campo] = valor;
+    }
+    marcarAlterado();
+    if(campo === 'status') planoAtualizarPctModal();
+}
+
+function planoExcluirAcao(acaoId){
+    const d = planoDemandaAtiva();
+    if(!d) return;
+    if(!confirm('Excluir esta ação?')) return;
+    d.acoes = d.acoes.filter(x => x.id !== acaoId);
+    marcarAlterado();
+    renderPlanoAcoesModal();
+    planoAtualizarPctModal();
+}
+
+function planoSalvarDemandaForm(){
+    const d = planoDemandaAtiva();
+    if(!d) return;
+    const $ = id => document.getElementById(id);
+    d.demanda      = $('planoFormDemanda').value.trim();
+    d.tipo         = $('planoFormTipo').value;
+    d.solicitante  = $('planoFormSolicitante').value.trim();
+    d.responsavel  = $('planoFormResponsavel').value;
+    d.porte        = $('planoFormPorte').value;
+    d.prioridade   = $('planoFormPrioridade').value;
+    d.status       = $('planoFormStatus').value;
+    d.dataEntrada  = $('planoFormDataEntrada').value || '';
+    d.prazo        = $('planoFormPrazo').value || '';
+    d.proximoPasso = $('planoFormProximoPasso').value.trim();
+    d.bloqueio     = $('planoFormBloqueio').value.trim();
+    d.link         = $('planoFormLink').value.trim();
+    marcarAlterado();
+    planoAtualizarPctModal();
+}
+
+function planoExcluirDemanda(){
+    const d = planoDemandaAtiva();
+    if(!d) return;
+    if(!confirm(`Excluir a demanda "${d.demanda || d.codigo}" e suas ${d.acoes.length} ação(ões)?`)) return;
+    data.plano = data.plano.filter(x => x.id !== d.id);
+    marcarAlterado();
+    fecharDetalheDemanda();
+    renderPlano();
 }
     
 function reunListaHtml(arr, campo){
@@ -7424,7 +8145,7 @@ function fecharModalDia(){ document.getElementById('modalDia').classList.remove(
    FORMULÁRIO
 ============================================================ */
 function novoEventoHoje(){
-    if(view === 'plano') return;                 // ← adicione esta linha
+    if(view === 'plano'){ novaDemanda(); return; }              
     if(view === 'inbox'){ novoEventoInbox(); return; }
     if(view === 'notas'){ novaNota(); return; }
     if(view === 'reunioes'){ if(reuniaoSerieAtivaId){ novaReuniaoEntrada(reuniaoSerieAtivaId); } else { novaReuniaoSerie(); } return; }
@@ -7812,7 +8533,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     }
 
     document.addEventListener('keydown', e=>{
-        if(e.key === 'Escape'){ fecharForm(); fecharModalDia(); fecharAdmin(); return; }
+    if(e.key === 'Escape'){ fecharForm(); fecharModalDia(); fecharAdmin(); fecharDetalheDemanda(); return; }
         if(view === 'dia'){
             const tag = (e.target.tagName || '').toLowerCase();
             const digitando = (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable);
