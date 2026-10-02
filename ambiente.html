@@ -4048,19 +4048,13 @@ function render(){
     const filtersBar = document.getElementById('filtersBar');
     if(filtersBar){
         filtersBar.style.display =
-            view === 'registros' ? 'none' : '';
+            (view === 'registros' || view === 'plano') ? 'none' : '';
     }
     const buscaBar = document.getElementById('registroBuscaBar');
     if(buscaBar){
         const mostrar = view === 'registros';
         if(mostrar && buscaBar.style.display === 'none') registroBuscaConfigurarCampo();
         buscaBar.style.display = mostrar ? '' : 'none';
-    }
-
-    const filtersBar = document.getElementById('filtersBar');
-    if(filtersBar){
-        filtersBar.style.display =
-            (view === 'registros' || view === 'plano') ? 'none' : '';
     }
         
     aplicarTamanhoView(); fecharPopDia(); marcarSemana();
