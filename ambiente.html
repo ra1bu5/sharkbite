@@ -2353,6 +2353,48 @@
 @media (max-width: 560px) {
     .plano-acao-grid .c4, .plano-acao-grid .c3 { grid-column: span 6; }
 }
+
+/* ---------- Ações: resumo em uma linha + detalhe expansível ---------- */
+.plano-acao-card { padding: 0; gap: 0; overflow: hidden; background: var(--bg-container); }
+.plano-acao-card.aberta { border-color: var(--secondary); background: var(--bg-panel); }
+
+.plano-acao-resumo {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px;
+    cursor: pointer;
+    font: 500 14px var(--font-body);
+    color: var(--text-color);
+}
+.plano-acao-resumo:hover { background: var(--bg-hover); }
+.plano-acao-seta { width: 12px; flex: 0 0 12px; color: var(--text-muted); font-size: 12px; }
+.plano-acao-titulo {
+    flex: 1; min-width: 0;
+    font-weight: 700; color: var(--text-heading);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.plano-acao-titulo.vazio { font-weight: 500; font-style: italic; color: var(--text-muted); }
+.plano-acao-etapa {
+    flex: 0 0 150px; min-width: 0;
+    font-size: 12px; color: var(--text-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.plano-acao-resp { flex: 0 0 110px; min-width: 0; overflow: hidden; }
+.plano-acao-meta {
+    flex: 0 0 82px;
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px; font-weight: 600; color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.plano-acao-detalhe { padding: 4px 12px 14px; border-top: 1px solid var(--border-color); }
+.plano-acao-detalhe .plano-acao-grid { margin-top: 10px; }
+.plano-acao-grid .c12 { grid-column: span 12; }
+
+@media (max-width: 700px) {
+    .plano-acao-resumo { flex-wrap: wrap; row-gap: 4px; }
+    .plano-acao-titulo { flex: 1 1 60%; }
+    .plano-acao-etapa, .plano-acao-resp, .plano-acao-meta { flex: 0 0 auto; }
+}
     
 </style>
 </head>
@@ -2388,7 +2430,7 @@
                     <button data-view="notas"     onclick="setView('notas')">Notas<small>Bloco de anotações</small></button>
                     <button data-view="registros" onclick="setView('registros')">Change Log<small>Histórico de modificações</small></button>
                     <button data-view="reunioes"  onclick="setView('reunioes')">Reuniões<small>Atas de reunião</small></button>
-                    <button data-view="plano"     onclick="setView('plano')">Plano de Ação<small>Em construção</small></button>
+                    <button data-view="plano"     onclick="setView('plano')">Plano de Ação<small>Projetos e Demandas</small></button>
                 </div></div>
             </span>
         
@@ -6955,7 +6997,9 @@ const PLANO_ACAO_STATUS = ['A fazer','Fazendo','Feito','Bloqueada'];
 
 let planoFiltros = { status:'', prioridade:'', porte:'', tipo:'', responsavel:'' };
 let planoDemandaAtivaId = null;
-
+let planoAcoesAbertas = new Set();
+const PLANO_ACAO_COR = { 'A fazer':'#9e9e9e', 'Fazendo':'#2196f3', 'Feito':'#1a9c4a', 'Bloqueada':'#e53935' };
+        
 function planoCorPrioridade(p){ const x = PLANO_PRIORIDADES.find(y => y.id === p); return x ? x.cor : '#888'; }
 function planoCorStatus(s){ const x = PLANO_STATUS.find(y => y.id === s); return x ? x.cor : '#888'; }
 function planoBadge(cor, label, title){
@@ -7103,6 +7147,7 @@ function abrirDetalheDemanda(id, focoTitulo){
     planoDemandaAtivaId = id;
     const d = planoDemandaAtiva();
     if(!d) return;
+    planoAcoesAbertas.clear();
 
     document.getElementById('planoFormCodigo').textContent = d.codigo || '—';
     document.getElementById('planoFormDemanda').value = d.demanda || '';
@@ -7148,6 +7193,23 @@ function planoAtualizarPctModal(){
 }
 
 /* ---------- Ações (nível 2) ---------- */
+function planoResumoHtml(a, aberta){
+    const resp = a.responsavel
+        ? `<span class="badge badge-resp" style="${badgeStyle(getRespCor(a.responsavel))}">@${escapeHtml(a.responsavel)}</span>` : '';
+    const prazo = a.prazo ? `${ic('calendar', 12)}${fmtBR(a.prazo)}` : '';
+    const horas = (a.esforcoEstimado || a.esforcoReal) ? `${a.esforcoReal || 0}/${a.esforcoEstimado || 0} h` : '';
+    return `
+        <span class="plano-acao-seta">${aberta ? '▾' : '▸'}</span>
+        ${planoBadge(PLANO_ACAO_COR[a.status] || '#888', a.status || 'A fazer', 'Status')}
+        <span class="plano-acao-titulo ${a.acao ? '' : 'vazio'}">${escapeHtml(a.acao || 'Nova ação (clique para preencher)')}</span>
+        <span class="plano-acao-etapa">${escapeHtml(a.etapa || '')}</span>
+        <span class="plano-acao-resp">${resp}</span>
+        <span class="plano-acao-meta">${prazo}</span>
+        <span class="plano-acao-meta">${horas}</span>
+        <button type="button" class="btn-mini del" title="Excluir ação"
+                onclick="event.stopPropagation(); planoExcluirAcao(${a.id})">${ic('x', 13)}</button>`;
+}
+
 function renderPlanoAcoesModal(){
     const root = document.getElementById('planoAcoesBody');
     if(!root) return;
@@ -7160,55 +7222,73 @@ function renderPlanoAcoesModal(){
     }
 
     const resps = data.config.responsaveis || [];
-    root.innerHTML = d.acoes.map(a => `
-        <div class="plano-acao-card" data-acao-id="${a.id}">
-            <div class="plano-acao-topo">
-                <input type="text" class="plano-input plano-acao-nome" placeholder="O que fazer? (verbo + objeto, ex.: Mapear tabelas de origem)"
-                       value="${escapeHtml(a.acao||'')}" onchange="planoAcaoSet(${a.id}, 'acao', this.value)">
-                <button type="button" class="btn-mini del" title="Excluir ação" onclick="planoExcluirAcao(${a.id})">${ic('x',13)}</button>
-            </div>
-            <div class="plano-acao-grid">
-                <label class="c4">Etapa
-                    <select class="plano-input" onchange="planoAcaoSet(${a.id}, 'etapa', this.value)">
-                        <option value="">—</option>
-                        ${PLANO_ETAPAS.map(e => `<option value="${escapeHtml(e)}" ${a.etapa===e?'selected':''}>${escapeHtml(e)}</option>`).join('')}
-                    </select>
-                </label>
-                <label class="c4">Responsável
-                    <select class="plano-input" onchange="planoAcaoSet(${a.id}, 'responsavel', this.value)">
-                        <option value="">—</option>
-                        ${resps.map(r => `<option value="${escapeHtml(r.label)}" ${a.responsavel===r.label?'selected':''}>${escapeHtml(r.label)}</option>`).join('')}
-                    </select>
-                </label>
-                <label class="c4">Status
-                    <select class="plano-input" onchange="planoAcaoSet(${a.id}, 'status', this.value)">
-                        ${PLANO_ACAO_STATUS.map(s => `<option value="${escapeHtml(s)}" ${a.status===s?'selected':''}>${escapeHtml(s)}</option>`).join('')}
-                    </select>
-                </label>
-                <label class="c3">Início
-                    <input type="date" class="plano-input" value="${escapeHtml(a.inicio||'')}" onchange="planoAcaoSet(${a.id}, 'inicio', this.value)">
-                </label>
-                <label class="c3">Prazo
-                    <input type="date" class="plano-input" value="${escapeHtml(a.prazo||'')}" onchange="planoAcaoSet(${a.id}, 'prazo', this.value)">
-                </label>
-                <label class="c3">Estimado (h)
-                    <input type="number" step="0.5" min="0" class="plano-input" value="${escapeHtml(String(a.esforcoEstimado||0))}" onchange="planoAcaoSet(${a.id}, 'esforcoEstimado', this.value)">
-                </label>
-                <label class="c3">Real (h)
-                    <input type="number" step="0.5" min="0" class="plano-input" value="${escapeHtml(String(a.esforcoReal||0))}" onchange="planoAcaoSet(${a.id}, 'esforcoReal', this.value)">
-                </label>
-            </div>
-            <input type="text" class="plano-input" placeholder="Observações, decisões, premissas…"
-                   value="${escapeHtml(a.observacoes||'')}" onchange="planoAcaoSet(${a.id}, 'observacoes', this.value)">
-        </div>
-    `).join('');
+    root.innerHTML = d.acoes.map(a => {
+        const aberta = planoAcoesAbertas.has(a.id);
+        const detalhe = !aberta ? '' : `
+            <div class="plano-acao-detalhe">
+                <div class="plano-acao-grid">
+                    <label class="c12">Ação
+                        <input type="text" class="plano-input plano-acao-nome" placeholder="Verbo + objeto, ex.: Mapear tabelas de origem"
+                               value="${escapeHtml(a.acao || '')}" onchange="planoAcaoSet(${a.id}, 'acao', this.value)">
+                    </label>
+                    <label class="c4">Etapa
+                        <select class="plano-input" onchange="planoAcaoSet(${a.id}, 'etapa', this.value)">
+                            <option value="">—</option>
+                            ${PLANO_ETAPAS.map(e => `<option value="${escapeHtml(e)}" ${a.etapa === e ? 'selected' : ''}>${escapeHtml(e)}</option>`).join('')}
+                        </select>
+                    </label>
+                    <label class="c4">Responsável
+                        <select class="plano-input" onchange="planoAcaoSet(${a.id}, 'responsavel', this.value)">
+                            <option value="">—</option>
+                            ${resps.map(r => `<option value="${escapeHtml(r.label)}" ${a.responsavel === r.label ? 'selected' : ''}>${escapeHtml(r.label)}</option>`).join('')}
+                        </select>
+                    </label>
+                    <label class="c4">Status
+                        <select class="plano-input" onchange="planoAcaoSet(${a.id}, 'status', this.value)">
+                            ${PLANO_ACAO_STATUS.map(s => `<option value="${escapeHtml(s)}" ${a.status === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
+                        </select>
+                    </label>
+                    <label class="c3">Início
+                        <input type="date" class="plano-input" value="${escapeHtml(a.inicio || '')}" onchange="planoAcaoSet(${a.id}, 'inicio', this.value)">
+                    </label>
+                    <label class="c3">Prazo
+                        <input type="date" class="plano-input" value="${escapeHtml(a.prazo || '')}" onchange="planoAcaoSet(${a.id}, 'prazo', this.value)">
+                    </label>
+                    <label class="c3">Estimado (h)
+                        <input type="number" step="0.5" min="0" class="plano-input" value="${escapeHtml(String(a.esforcoEstimado || 0))}" onchange="planoAcaoSet(${a.id}, 'esforcoEstimado', this.value)">
+                    </label>
+                    <label class="c3">Real (h)
+                        <input type="number" step="0.5" min="0" class="plano-input" value="${escapeHtml(String(a.esforcoReal || 0))}" onchange="planoAcaoSet(${a.id}, 'esforcoReal', this.value)">
+                    </label>
+                    <label class="c12">Observações
+                        <input type="text" class="plano-input" placeholder="Decisões, premissas, regras de negócio…"
+                               value="${escapeHtml(a.observacoes || '')}" onchange="planoAcaoSet(${a.id}, 'observacoes', this.value)">
+                    </label>
+                </div>
+            </div>`;
+        return `<div class="plano-acao-card ${aberta ? 'aberta' : ''}" data-acao-id="${a.id}">
+            <div class="plano-acao-resumo" onclick="planoToggleAcao(${a.id})">${planoResumoHtml(a, aberta)}</div>
+            ${detalhe}
+        </div>`;
+    }).join('');
+}
+
+function planoToggleAcao(acaoId){
+    if(planoAcoesAbertas.has(acaoId)) planoAcoesAbertas.delete(acaoId);
+    else planoAcoesAbertas.add(acaoId);
+    renderPlanoAcoesModal();
+    if(planoAcoesAbertas.has(acaoId)){
+        const campo = document.querySelector(`.plano-acao-card[data-acao-id="${acaoId}"] .plano-acao-nome`);
+        if(campo && !campo.value) campo.focus();
+    }
 }
 
 function planoAdicionarAcao(){
     const d = planoDemandaAtiva();
     if(!d) return;
+    const id = Date.now() + Math.floor(Math.random() * 1000);
     d.acoes.push({
-        id: Date.now() + Math.floor(Math.random()*1000),
+        id,
         acao: '',
         etapa: '',
         responsavel: '',
@@ -7220,15 +7300,15 @@ function planoAdicionarAcao(){
         observacoes: '',
         ordem: (d.acoes.length + 1) * 10
     });
+    planoAcoesAbertas.add(id);
     marcarAlterado();
     renderPlanoAcoesModal();
     planoAtualizarPctModal();
     setTimeout(() => {
-        const cards = document.querySelectorAll('#planoAcoesBody .plano-acao-card');
-        const last = cards[cards.length - 1];
-        if(last){
-            last.scrollIntoView({ block: 'nearest' });
-            const campo = last.querySelector('input');
+        const card = document.querySelector(`.plano-acao-card[data-acao-id="${id}"]`);
+        if(card){
+            card.scrollIntoView({ block: 'nearest' });
+            const campo = card.querySelector('.plano-acao-nome');
             if(campo) campo.focus();
         }
     }, 40);
@@ -7246,6 +7326,8 @@ function planoAcaoSet(acaoId, campo, valor){
     }
     marcarAlterado();
     if(campo === 'status') planoAtualizarPctModal();
+    const resumo = document.querySelector(`.plano-acao-card[data-acao-id="${acaoId}"] .plano-acao-resumo`);
+    if(resumo) resumo.innerHTML = planoResumoHtml(a, planoAcoesAbertas.has(acaoId));
 }
 
 function planoExcluirAcao(acaoId){
