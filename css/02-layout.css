@@ -1,0 +1,339 @@
+/* ============================================================
+   02-layout.css — Cabeçalho, abas, filtros, legenda e casca
+   Depende de: 01-base.css
+   ============================================================ */
+
+/* ---------- Cabeçalho (title-block / year) ---------- */
+.header-wrapper {
+    display: flex;
+    justify-content: flex-start;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 0 20px;
+    margin-bottom: 12px;
+}
+.title-block {
+    display: flex;
+    align-items: baseline;
+    gap: clamp(10px, 1.5vw, 22px);
+    flex-wrap: wrap;
+}
+.title-block h1 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: var(--font-weight-h1);
+    color: var(--text-heading);
+    letter-spacing: var(--letter-spacing-h1);
+    line-height: 1;
+    text-transform: var(--transform-h1);
+    text-shadow: var(--text-shadow-h1);
+    font-size: var(--font-size-h1);
+}
+.year-inline {
+    font-family: var(--font-body);
+    font-size: clamp(16px, 2vw, 26px);
+    color: var(--text-heading);
+    letter-spacing: 2px;
+    text-shadow: var(--text-shadow-h1);
+}
+
+/* ---------- Toolbar ---------- */
+.toolbar {
+    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    background: var(--toolbar-bg);
+    border: var(--border-width) var(--border-style) var(--toolbar-border);
+    padding: 8px 12px; margin: 0 20px 10px;
+    border-radius: var(--radius);
+}
+.toolbar select {
+    border: var(--border-width) var(--border-style) var(--border-color-strong);
+    background: var(--bg-panel-alt);
+    color: var(--text-heading);
+    font-family: var(--font-body);
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: var(--radius-sm);
+}
+.toolbar .spacer { flex: 1; }
+
+/* ---------- Filtros ---------- */
+.filters {
+    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    background: var(--filter-bg);
+    border: var(--border-width) var(--border-style) var(--filter-border);
+    padding: 8px 12px; margin: 0 20px 10px;
+    border-radius: var(--radius);
+}
+.filters select {
+    border: var(--border-width) var(--border-style) var(--filter-border);
+    background: var(--bg-panel-alt);
+    color: var(--filter-text);
+    font-family: var(--font-body);
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: var(--radius-sm);
+}
+.filters .lbl {
+    font-family: var(--font-heading);
+    font-size: 11px; color: var(--filter-text);
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+}
+.filters .count {
+    color: var(--filter-text);
+    font-family: var(--font-body);
+    font-size: 14px; font-weight: 700;
+    margin-left: auto;
+}
+.filters .count { margin-left: 8px; }
+.filters .datenav {
+    margin-left: auto;
+    padding-left: 18px;
+    border-left: 1px solid var(--filter-border);
+}
+.appbar + .filters { margin-top: 16px; }
+
+/* ---------- Datas (datenav) ---------- */
+.datenav { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.datenav select {
+    border: 1px solid var(--border-color-strong);
+    background: var(--bg-panel-alt);
+    color: var(--text-heading);
+    font-family: var(--font-body);
+    font-size: 14px; font-weight: 600;
+    padding: 7px 8px;
+    border-radius: var(--btn-radius);
+    cursor: pointer;
+}
+
+/* ---------- Appbar (cabeçalho principal) ---------- */
+.appbar {
+    display: flex; align-items: center;
+    gap: 16px 24px; flex-wrap: wrap;
+    padding: 12px clamp(12px, 2vw, 24px);
+    background: var(--primary);
+    color: var(--text-on-primary);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.appbar { border-radius: 0; }
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+.brand-logo { width: 36px; height: 36px; flex-shrink: 0; }
+.brand-name {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: 800; font-size: 20px;
+    letter-spacing: .3px; line-height: 1;
+}
+.brand-name { font-size: 22px; }
+.brand-sub {
+    display: block;
+    font-size: 10px; letter-spacing: 2.5px;
+    text-transform: uppercase; opacity: .6; margin-top: 4px;
+}
+
+/* ---------- Tabs (abas principais) ---------- */
+.tabs {
+    display: flex; gap: 2px; align-items: center;
+    background: rgba(255,255,255,.1);
+    padding: 3px;
+    border-radius: 10px;
+}
+.tabs .btn-toggle {
+    background: transparent;
+    color: inherit;
+    opacity: .8;
+    padding: 7px 14px;
+    border-radius: 8px;
+}
+.tabs .btn-toggle:hover {
+    opacity: 1;
+    background: rgba(255,255,255,.12);
+    filter: none;
+}
+.tabs .btn-toggle.active {
+    background: #fff;
+    color: var(--primary);
+    opacity: 1;
+}
+.tabs-sep {
+    width: 1px; align-self: stretch;
+    background: rgba(255,255,255,.25);
+    margin: 4px 4px;
+}
+
+/* ---------- Ações do appbar ---------- */
+.appbar-actions { display: flex; gap: 8px; align-items: center; }
+.btn-accent { background: var(--secondary); }
+.btn-accent:hover { background: var(--secondary-hover); }
+.btn-ghost { background: rgba(255,255,255,.14); }
+.btn-ghost:hover { background: rgba(255,255,255,.24); }
+
+/* ---------- Subbar ---------- */
+.subbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    padding: 18px clamp(12px, 2vw, 24px) 10px;
+}
+.subbar .title-block h1 { font-size: clamp(24px, 3vw, 34px); }
+
+/* ---------- Legend (legenda inferior) ---------- */
+.legend {
+    display: flex; flex-wrap: wrap; gap: 10px 16px;
+    margin: 16px 20px 20px; padding: 12px;
+    background: var(--bg-panel);
+    border: var(--border-width) var(--border-style) var(--border-color);
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 14px; color: var(--text-color);
+}
+.legend .item { display: flex; align-items: center; gap: 6px; }
+.legend .dot {
+    width: 14px; height: 14px;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid;
+}
+.legend .sep {
+    width: 1px; align-self: stretch;
+    background: var(--border-color-strong);
+    margin: 0 4px;
+}
+.legend {
+    max-height: 72px; overflow: auto;
+    align-items: center;
+}
+.legend .lg-t {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.legend .item .dot-badge { width: 10px; height: 10px; }
+.legend { margin: 6px 20px 12px; padding: 8px 12px; }
+
+/* ---------- Menu de categoria (tab-wrap / tab-menu) ---------- */
+.tab-wrap { position: relative; display: inline-flex; }
+.tab-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    padding-top: 8px;
+    z-index: 400;
+}
+.tab-wrap:hover > .tab-menu { display: block; }
+.tab-wrap::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    height: 8px;
+    pointer-events: none;
+}
+.tab-wrap:hover::after { pointer-events: auto; }
+
+.tab-menu-box {
+    min-width: 230px;
+    padding: 5px;
+    background: var(--bg-container);
+    border: 1px solid var(--border-color-strong);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+.tab-menu-box button {
+    display: flex; flex-direction: column; align-items: flex-start;
+    width: 100%; padding: 8px 10px;
+    border: 0; border-radius: 6px;
+    background: transparent;
+    color: var(--text-heading);
+    font: 600 14px var(--font-body);
+    cursor: pointer;
+    text-align: left;
+}
+.tab-menu-box button small {
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.tab-menu-box button:hover { background: var(--bg-panel-dark); }
+.tab-menu-box button.atual {
+    background: var(--bg-panel-alt);
+    box-shadow: inset 3px 0 0 var(--secondary);
+}
+
+/* Categoria pai ativa */
+.tabs .tab-wrap > .btn-toggle.ativo-grupo {
+    background: #fff;
+    color: var(--primary);
+    opacity: 1;
+}
+.tabs .tab-menu-box button.atual {
+    background: var(--bg-panel-alt);
+    box-shadow: inset 3px 0 0 var(--secondary);
+    font-weight: 700;
+}
+.tabs .tab-menu-box button .inbox-badge { margin-left: 6px; }
+
+/* Reforça o fechamento: some com o menu quando o wrapper perde o hover */
+.tabs:hover .tab-wrap:not(:hover) > .tab-menu { display: none; }
+
+/* Inbox na mesma linha (badge + label) */
+.tab-menu-box button .lbl-com-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ---------- Casca: viewContainer ---------- */
+#viewContainer {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding-bottom: 12px;
+}
+.appbar, .subbar, .filters, .legend { flex-shrink: 0; }
+
+/* ---------- Visibilidade por view ---------- */
+body[data-view=inbox] .datenav,
+body[data-view=notas] .datenav,
+body[data-view=notas] .filters,
+body[data-view=reunioes] .datenav,
+body[data-view=reunioes] .filters { display: none; }
+
+body[data-view=quadro] #viewContainer { overflow: hidden; }
+body[data-view=quadro] .datenav,
+body[data-view=quadro] .legend,
+body[data-view=notas] .legend,
+body[data-view=reunioes] .legend,
+body[data-view=registros] .legend { display: none; }
+body[data-view=quadro].arrastando .inbox-dropzone { display: none; }
+
+/* Respiro entre cabeçalho e conteúdos densos */
+body[data-view=registros] #viewContainer,
+body[data-view=notas] #viewContainer,
+body[data-view=reunioes] #viewContainer {
+    padding-top: 16px;
+}
+
+/* ---------- Responsivo (header / filtros / legend) ---------- */
+.header-wrapper {
+    padding: 0 clamp(10px, 1.5vw, 20px);
+    gap: clamp(8px, 1.5vw, 20px);
+}
+.title-block h1 { font-size: clamp(22px, 3.5vw, var(--font-size-h1)); }
+
+@media (max-width: 800px) {
+    .toolbar, .filters { margin: 0 10px 10px; padding: 6px 10px; }
+    .toolbar .btn { flex: 1 1 auto; min-width: 70px; justify-content: center; }
+    .toolbar .spacer { display: none; }
+    .calendar, .list-day, .legend, .inbox-view { margin-left: 10px; margin-right: 10px; }
+    .week-grid { padding: 0 10px; grid-template-columns: repeat(7, minmax(120px, 1fr)); overflow-x: auto; }
+    .day-view { padding: 0 10px; }
+    .tabs { order: 3; width: 100%; }
+    .tabs .btn-toggle { flex: 1; padding: 7px 6px; }
+}
+
+@media (max-width: 560px) {
+    .container { padding: 12px 0; }
+}

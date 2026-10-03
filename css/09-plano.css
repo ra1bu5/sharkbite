@@ -1,0 +1,427 @@
+/* ============================================================
+   09-plano.css — Plano de Ação (demandas + ações)
+   Depende de: 01-base.css, 03-componentes.css, 04-calendario.css
+   ============================================================ */
+
+/* ============================================================
+   LAYOUT GERAL
+============================================================ */
+.plano-view {
+    padding: 16px clamp(12px, 2vw, 24px) 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Barra superior (botão nova demanda + filtros) */
+.plano-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+}
+
+.plano-filtros {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-left: auto;
+}
+.plano-filtros select {
+    border: 1px solid var(--border-color-strong);
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font: 600 13px var(--font-body);
+    padding: 5px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.plano-count {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+    margin-left: 6px;
+}
+
+/* ============================================================
+   TABELA DE DEMANDAS
+============================================================ */
+.plano-tabela-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-container);
+}
+
+.plano-tabela {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font: 500 14px var(--font-body);
+    table-layout: fixed;
+}
+.plano-tabela thead th {
+    position: sticky;
+    top: 0;
+    background: var(--cal-head-bg);
+    color: var(--cal-head-text);
+    font: 700 11px var(--font-heading);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 10px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+.plano-tabela tbody tr {
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: background .12s;
+}
+.plano-tabela tbody tr:last-child { border-bottom: 0; }
+.plano-tabela tbody tr:hover { background: var(--bg-hover); }
+.plano-tabela td {
+    padding: 9px 10px;
+    vertical-align: middle;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.plano-tabela .plano-id {
+    font: 800 12px var(--font-mono);
+    color: var(--text-heading);
+    letter-spacing: .5px;
+}
+.plano-tabela .plano-demanda {
+    font-weight: 700;
+    color: var(--text-heading);
+}
+
+/* Barra de progresso em miniatura (na tabela) */
+.plano-pct-mini {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+}
+.plano-pct-mini small {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    min-width: 30px;
+    text-align: right;
+}
+.plano-pct-bar {
+    width: 60px;
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 99px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.plano-pct-bar > span {
+    display: block;
+    height: 100%;
+    background: var(--secondary);
+    transition: width .2s;
+}
+.plano-pct-bar.big {
+    width: auto;
+    flex: 1;
+    height: 10px;
+}
+
+/* ============================================================
+   MODAL DE DETALHE / CRIAÇÃO DA DEMANDA
+============================================================ */
+.plano-modal-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border-color);
+}
+.plano-codigo {
+    font: 800 14px var(--font-mono);
+    color: var(--text-muted);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 4px 10px;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+}
+.plano-titulo-input {
+    flex: 1;
+    font: 800 18px var(--font-heading);
+    color: var(--text-heading);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    min-width: 0;
+}
+.plano-titulo-input:focus {
+    outline: none;
+    background: var(--bg-panel-alt);
+    border-color: var(--border-color-strong);
+}
+
+/* Grid de campos do modal */
+.plano-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+    margin-bottom: 14px;
+}
+@media (max-width: 560px) {
+    .plano-modal-grid { grid-template-columns: 1fr; }
+}
+
+/* Barra de progresso grande (dentro do modal) */
+.plano-pct-modal {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+}
+.plano-pct-modal label {
+    font: 700 12px var(--font-heading);
+    color: var(--text-heading);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    flex-shrink: 0;
+}
+.plano-pct-modal #planoFormPct {
+    font: 800 16px var(--font-heading);
+    color: var(--text-heading);
+    min-width: 48px;
+    text-align: right;
+}
+
+/* Cabeçalho da seção "Ações" */
+.plano-acoes-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 6px 0 10px;
+}
+.plano-acoes-head h3 {
+    margin: 0;
+    font: 800 14px var(--font-heading);
+    color: var(--text-heading);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Input genérico do plano (usado nos formulários de ação) */
+.plano-input {
+    width: 100%;
+    padding: 5px 7px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font: 500 13px var(--font-body);
+    box-sizing: border-box;
+}
+.plano-input:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: -1px;
+}
+
+/* Estado vazio das ações */
+.plano-acoes-vazio {
+    padding: 22px;
+    text-align: center;
+    font-style: italic;
+    color: var(--text-muted);
+    border: 2px dashed var(--border-color-strong);
+    border-radius: var(--radius);
+}
+
+/* ============================================================
+   AÇÕES — cartões expandíveis
+============================================================ */
+.plano-acoes-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.plano-acao-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+    background: var(--bg-container);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+.plano-acao-card.aberta {
+    border-color: var(--secondary);
+    background: var(--bg-panel);
+}
+
+/* Resumo (linha visível quando fechado) */
+.plano-acao-resumo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    cursor: pointer;
+    font: 500 14px var(--font-body);
+    color: var(--text-color);
+}
+.plano-acao-resumo:hover { background: var(--bg-hover); }
+
+.plano-acao-seta {
+    width: 12px;
+    flex: 0 0 12px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+.plano-acao-titulo {
+    flex: 1;
+    min-width: 0;
+    font-weight: 700;
+    color: var(--text-heading);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.plano-acao-titulo.vazio {
+    font-weight: 500;
+    font-style: italic;
+    color: var(--text-muted);
+}
+.plano-acao-etapa {
+    flex: 0 0 150px;
+    min-width: 0;
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.plano-acao-resp {
+    flex: 0 0 110px;
+    min-width: 0;
+    overflow: hidden;
+}
+.plano-acao-meta {
+    flex: 0 0 82px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* Detalhe expandido */
+.plano-acao-detalhe {
+    padding: 4px 12px 14px;
+    border-top: 1px solid var(--border-color);
+}
+.plano-acao-detalhe .plano-acao-grid {
+    margin-top: 10px;
+}
+
+.plano-acao-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 8px 10px;
+}
+.plano-acao-grid .c4 { grid-column: span 4; }
+.plano-acao-grid .c3 { grid-column: span 3; }
+.plano-acao-grid .c12 { grid-column: span 12; }
+
+.modal .plano-acao-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin: 0;
+    font: 700 11px var(--font-heading);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+@media (max-width: 560px) {
+    .plano-acao-grid .c4,
+    .plano-acao-grid .c3 { grid-column: span 6; }
+}
+
+/* ============================================================
+   MODAL "DEMANDA" — tamanho fixo em desktop
+============================================================ */
+@media (min-width: 701px) {
+    #modalDemanda .modal {
+        width: min(900px, 100% - 16px);
+        height: min(92vh, 900px);
+    }
+}
+
+/* Responsivo do resumo da ação */
+@media (max-width: 700px) {
+    .plano-acao-resumo {
+        flex-wrap: wrap;
+        row-gap: 4px;
+    }
+    .plano-acao-titulo { flex: 1 1 60%; }
+    .plano-acao-etapa,
+    .plano-acao-resp,
+    .plano-acao-meta { flex: 0 0 auto; }
+}
+
+/* ============================================================
+   VIEW "EM CONSTRUÇÃO" (fallback / manutenção)
+============================================================ */
+.view-construcao {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 80px 24px;
+    text-align: center;
+    font-family: var(--font-body);
+    min-height: 50vh;
+}
+.view-construcao .icone {
+    font-size: 64px;
+    line-height: 1;
+    opacity: .8;
+}
+.view-construcao h2 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: clamp(20px, 3vw, 28px);
+    color: var(--text-heading);
+    letter-spacing: .5px;
+}
+.view-construcao p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 460px;
+}
+.view-construcao .hint {
+    font-size: 13px;
+    opacity: .8;
+}

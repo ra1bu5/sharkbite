@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sharkbite</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="icon" type="image/png" href="img/logo/logo_shark.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- ══════════════ CSS (ordem importa) ══════════════ -->
+<link rel="stylesheet" href="css/01-base.css">
+<link rel="stylesheet" href="css/02-layout.css">
+<link rel="stylesheet" href="css/03-componentes.css">
+<link rel="stylesheet" href="css/04-calendario.css">
+<link rel="stylesheet" href="css/05-quadro.css">
+<link rel="stylesheet" href="css/06-notas.css">
+<link rel="stylesheet" href="css/07-registros.css">
+<link rel="stylesheet" href="css/08-reunioes.css">
+<link rel="stylesheet" href="css/09-plano.css">
+<link rel="stylesheet" href="css/10-admin.css">
+<link rel="stylesheet" href="css/11-mobile.css">
+</head>
+<body>
+
+<!-- ══════════════ CONTAINER PRINCIPAL ══════════════ -->
+<div class="container">
+
+    <header class="appbar">
+        <div class="brand">
+            <a href="index.html" title="Voltar para os ambientes" style="display:flex">
+                <img class="brand-logo" src="img/logo/logo_shark.png" alt="Sharkbite">
+            </a>
+            <div>
+                <span class="brand-name">Sharkbite</span>
+                <span class="brand-sub" id="ambienteNome"></span>
+            </div>
+        </div>
+
+        <nav class="tabs" aria-label="Visualizações">
+            <!-- Categoria: Planejamento -->
+            <span class="tab-wrap" data-grupo="planejamento">
+                <button class="btn btn-toggle" type="button" onclick="this.blur()">Planejamento</button>
+                <div class="tab-menu"><div class="tab-menu-box">
+                    <button data-view="mes"    onclick="setView('mes')">Mês<small>Visão mensal</small></button>
+                    <button data-view="semana" data-modo="completa" onclick="setSemana('completa')">Semana<small>Domingo a sábado</small></button>
+                    <button data-view="semana" data-modo="util"     onclick="setSemana('util')">Semana de trabalho<small>Segunda a sexta</small></button>
+                    <button data-view="dia"    onclick="setView('dia')">Dia<small>Um dia por vez</small></button>
+                    <button data-view="quadro" onclick="setView('quadro')">Quadro<small>Kanban por status</small></button>
+                    <button data-view="inbox"  onclick="setView('inbox')">
+                        <span class="lbl-com-badge">Inbox <span class="inbox-badge" id="inboxBadge" style="display:none;">0</span></span>
+                        <small>Tarefas sem data</small>
+                    </button>
+                </div></div>
+            </span>
+
+            <!-- Categoria: Central de Operações -->
+            <span class="tab-wrap" data-grupo="central">
+                <button class="btn btn-toggle" type="button" onclick="this.blur()">Central de Operações</button>
+                <div class="tab-menu"><div class="tab-menu-box">
+                    <button data-view="notas"     onclick="setView('notas')">Notas<small>Bloco de anotações</small></button>
+                    <button data-view="registros" onclick="setView('registros')">Change Log<small>Histórico de modificações</small></button>
+                    <button data-view="reunioes"  onclick="setView('reunioes')">Reuniões<small>Atas de reunião</small></button>
+                    <button data-view="plano"     onclick="setView('plano')">Plano de Ação<small>Projetos e Demandas</small></button>
+                </div></div>
+            </span>
+        </nav>
+
+        <div class="appbar-actions">
+            <a class="btn btn-ghost btn-ic" href="index.html" style="text-decoration:none" title="Voltar para a lista de ambientes">‹ Ambientes</a>
+            <button class="btn btn-accent btn-ic" onclick="novoEventoHoje()" title="Criar novo item na tela atual"><span data-ic="plus"></span>Novo</button>
+            <button class="btn btn-success" id="btnSalvar" onclick="salvarManual()">Salvar</button>
+            <button class="btn btn-ghost btn-ic" id="btnTema" onclick="alternarTema()" title="Alternar tema claro/escuro"></button>
+            <button class="btn btn-ghost btn-ic" id="btnAdmin" onclick="abrirAdmin()" title="Configurações e administração"><span data-ic="sliders"></span>Admin</button>
+        </div>
+    </header>
+
+    <div class="filters" id="filtersBar">
+        <span class="lbl">Filtros:</span>
+        <select id="filterTipo" onchange="aplicarFiltros()"></select>
+        <select id="filterStatus" onchange="aplicarFiltros()"></select>
+        <select id="filterResp" onchange="aplicarFiltros()"></select>
+        <select id="filterArea" onchange="aplicarFiltros()"></select>
+        <select id="filterComplexidade" onchange="aplicarFiltros()"></select>
+        <button class="btn btn-mini" style="background:var(--filter-text);color:var(--filter-bg);" onclick="limparFiltros()">Limpar</button>
+        <span class="count" id="filterCount"></span>
+        <div class="datenav" id="dateNav">
+            <button class="btn btn-nav" onclick="navPrev()" title="Anterior">‹</button>
+            <select id="selectMes"></select>
+            <select id="selectAno"></select>
+            <button class="btn btn-nav" onclick="navNext()" title="Próximo">›</button>
+            <button class="btn btn-primary" onclick="irHoje()">Hoje</button>
+        </div>
+    </div>
+
+    <div class="busca-bar" id="registroBuscaBar" style="display:none;">
+        <span class="lbl">Buscar por:</span>
+        <select id="registroBuscaCampo" onchange="registroBuscaMudouCampo(this)" aria-label="Campo da busca">
+            <option value="titulo">Título do log</option>
+            <option value="responsavel">Responsável</option>
+            <option value="status">Status do log</option>
+            <option value="descricao">Termos na descrição</option>
+        </select>
+        <div class="busca-input-wrap">
+            <span data-ic="search"></span>
+            <input type="text" id="registroBuscaTexto" list="registroBuscaSugestoes" autocomplete="off"
+                   placeholder="Buscar pelo título do log…"
+                   oninput="registroBuscaMudouTexto(this)"
+                   onkeydown="if(event.key==='Escape'){ event.stopPropagation(); registroBuscaLimpar(); }"
+                   aria-label="Texto da busca">
+            <datalist id="registroBuscaSugestoes"></datalist>
+        </div>
+        <button class="btn btn-mini" style="background:var(--filter-text);color:var(--filter-bg);" onclick="registroBuscaLimpar()">Limpar</button>
+        <span class="count" id="registroBuscaCount"></span>
+    </div>
+
+    <div id="viewContainer"></div>
+    <div class="legend" id="legend"></div>
+</div>
+
+<!-- ══════════════ DROPZONE DE INBOX ══════════════ -->
+<div class="inbox-dropzone" id="inboxDropzone"
+     ondragover="onInboxDragOver(event)" ondragleave="onInboxDragLeave(event)" ondrop="onInboxDrop(event)">
+    Soltar aqui para remover a data
+</div>
+
+<!-- ══════════════ MODAL DO DIA ══════════════ -->
+<div class="modal-overlay" id="modalDia" onclick="if(event.target===this && overlayDown) fecharModalDia()">
+    <div class="modal">
+        <h2 id="modalDiaTitulo">Eventos do dia</h2>
+        <div class="events-day-list" id="eventsDayList"></div>
+        <div class="actions">
+            <button class="btn btn-secondary left" onclick="abrirFormEvento(null, diaSelecionado)">Adicionar evento</button>
+            <button class="btn btn-primary" onclick="fecharModalDia()">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════ MODAL DO FORMULÁRIO DE EVENTO ══════════════ -->
+<div class="modal-overlay" id="modalForm" onclick="if(event.target===this && overlayDown) fecharForm()">
+    <div class="modal">
+        <h2 id="formTituloModal">Novo evento</h2>
+        <input type="hidden" id="formId">
+        <div class="field"><label>Título</label><input type="text" id="formTitulo" placeholder="Ex.: Disponibilização da planilha"></div>
+        <div class="row2">
+            <div class="field"><label>Responsável</label><select id="formResponsavel"></select></div>
+            <div class="field"><label>Área</label><select id="formArea"></select></div>
+        </div>
+        <div class="row2 row3">
+            <div class="field"><label>Tipo</label><select id="formTipo"></select></div>
+            <div class="field"><label>Complexidade</label><select id="formComplexidade"></select></div>
+            <div class="field"><label>Status</label><select id="formStatus"></select></div>
+        </div>
+        <div class="data-toggle-row">
+            <label class="checkbox-label">
+                <input type="checkbox" id="formSemData" onchange="toggleSemData()">
+                <span>Sem data definida (enviar para o Inbox)</span>
+            </label>
+        </div>
+        <div class="row2" id="formDatasRow">
+            <div class="field"><label>Data de início</label><input type="date" id="formDataInicio" onchange="atualizarToggleIsolado()"></div>
+            <div class="field"><label>Data de término</label><input type="date" id="formDataFim" onchange="atualizarToggleIsolado()" oninput="atualizarToggleIsolado()"></div>
+        </div>
+        <div class="field" id="formIsoladoWrap" style="display:none;">
+            <label class="checkbox-label">
+                <input type="checkbox" id="formIsolado" onchange="atualizarDiasUteisWrap()">
+                <span>Criar tarefas isoladas por dia</span>
+            </label>
+            <span class="hint">
+                <b>Desmarcado (padrão):</b> tarefa em cadeia — editar um dia afeta todos os dias do período.<br>
+                <b>Marcado:</b> cria um evento independente para cada dia — editar um não afeta os demais.
+            </span>
+            <div id="formDiasUteisWrap" style="display:none; margin-top:8px;">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="formDiasUteis">
+                    <span>Considerar apenas dias úteis na recorrência</span>
+                </label>
+                <span class="hint">Quando marcado, sábados e domingos do período não geram tarefa isolada.</span>
+            </div>
+        </div>
+
+        <div class="field" id="secDesc">
+            <div class="sec-head">
+                <label onclick="toggleSecao('desc')"><span class="sec-arrow">▾</span>Descrição</label>
+                <span class="sec-info" id="descInfo"></span>
+            </div>
+            <div class="sec-body">
+                <div class="rte-wrap">
+                    <div id="rteBarraForm"></div>
+                    <div id="formDescricao" class="notas-editor rte rte-form" contenteditable="true"
+                         data-placeholder="Detalhes, anotações…"
+                         onkeydown="rteKeydown(event)" onpaste="rtePaste(event)"
+                         onkeyup="fmtAtualizarEstado()" onmouseup="fmtAtualizarEstado()"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="task-checklist field" id="formChecklist">
+            <div class="sec-head">
+                <label onclick="toggleSecao('check')"><span class="sec-arrow">▾</span>Checklist <span class="pct" id="formChecklistPct"></span></label>
+                <span class="sec-tools">
+                    <button type="button" class="checklist-add" data-ic="plus" onclick="adicionarChecklistItem()" title="Adicionar item"></button>
+                </span>
+            </div>
+            <div class="sec-body">
+                <div class="task-checklist-progress" id="formChecklistProgressWrap" style="display:none;"><span id="formChecklistProgress"></span></div>
+                <div class="task-checklist-items" id="formChecklistItems"></div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-danger left" id="btnExcluirForm" style="display:none;" onclick="excluirEventoForm()">Excluir</button>
+            <button class="btn btn-secondary" onclick="fecharForm()">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════ MODAL DEMANDA (Plano de Ação) ══════════════ -->
+<div class="modal-overlay" id="modalDemanda" onclick="if(event.target===this && overlayDown) fecharDetalheDemanda()">
+    <div class="modal large">
+        <div class="plano-modal-head">
+            <span class="plano-codigo" id="planoFormCodigo">—</span>
+            <input type="text" id="planoFormDemanda" class="plano-titulo-input"
+                   placeholder="Nome da demanda (ex.: Painel de vendas regional)"
+                   onchange="planoSalvarDemandaForm()" oninput="planoSalvarDemandaForm()">
+            <button class="btn btn-danger btn-mini" title="Excluir demanda"
+                    onclick="planoExcluirDemanda()" style="flex-shrink:0;">✕</button>
+        </div>
+
+        <div class="plano-modal-grid">
+            <div class="field"><label>Tipo</label><select id="planoFormTipo" onchange="planoSalvarDemandaForm()"></select></div>
+            <div class="field"><label>Porte</label><select id="planoFormPorte" onchange="planoSalvarDemandaForm()"></select></div>
+            <div class="field"><label>Prioridade</label><select id="planoFormPrioridade" onchange="planoSalvarDemandaForm()"></select></div>
+            <div class="field"><label>Status</label><select id="planoFormStatus" onchange="planoSalvarDemandaForm()"></select></div>
+            <div class="field"><label>Solicitante</label><input type="text" id="planoFormSolicitante" onchange="planoSalvarDemandaForm()" placeholder="Quem pediu"></div>
+            <div class="field"><label>Responsável</label><select id="planoFormResponsavel" onchange="planoSalvarDemandaForm()"></select></div>
+            <div class="field"><label>Data de entrada</label><input type="date" id="planoFormDataEntrada" onchange="planoSalvarDemandaForm()"></div>
+            <div class="field"><label>Prazo</label><input type="date" id="planoFormPrazo" onchange="planoSalvarDemandaForm()"></div>
+        </div>
+
+        <div class="plano-pct-modal">
+            <label>Progresso</label>
+            <div class="plano-pct-bar big"><span id="planoFormPctBar" style="width:0%"></span></div>
+            <span id="planoFormPct">0%</span>
+        </div>
+
+        <div class="plano-modal-grid">
+            <div class="field" style="grid-column:1/-1;">
+                <label>Próximo passo</label>
+                <input type="text" id="planoFormProximoPasso" onchange="planoSalvarDemandaForm()" placeholder="A coisa mais importante, numa linha">
+            </div>
+            <div class="field" style="grid-column:1/-1;">
+                <label>Bloqueio / Dependência</label>
+                <input type="text" id="planoFormBloqueio" onchange="planoSalvarDemandaForm()" placeholder="O que está travando">
+            </div>
+            <div class="field" style="grid-column:1/-1;">
+                <label>Link</label>
+                <input type="text" id="planoFormLink" onchange="planoSalvarDemandaForm()" placeholder="Pasta, painel, ticket, e-mail…">
+            </div>
+        </div>
+
+        <div class="plano-acoes-head">
+            <h3>Ações</h3>
+            <button class="btn btn-secondary btn-mini" onclick="planoAdicionarAcao()">+ Ação</button>
+        </div>
+
+        <div class="plano-acoes-lista" id="planoAcoesBody"></div>
+
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="fecharDetalheDemanda()">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════ MODAL ADMIN ══════════════ -->
+<div class="modal-overlay" id="modalAdmin" onclick="if(event.target===this && overlayDown) fecharAdmin()">
+    <div class="modal large">
+        <h2>Painel de Administrador</h2>
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-pane="tipos"          onclick="switchAdminTab('tipos')">Tipos</button>
+            <button class="admin-tab"        data-pane="status"         onclick="switchAdminTab('status')">Status</button>
+            <button class="admin-tab"        data-pane="responsaveis"   onclick="switchAdminTab('responsaveis')">Respon.</button>
+            <button class="admin-tab"        data-pane="setores"        onclick="switchAdminTab('setores')">Setores</button>
+            <button class="admin-tab"        data-pane="areas"          onclick="switchAdminTab('areas')">Áreas</button>
+            <button class="admin-tab"        data-pane="aparencia"      onclick="switchAdminTab('aparencia')">Aparência</button>
+            <button class="admin-tab"        data-pane="tema"           onclick="switchAdminTab('tema')">Tema</button>
+            <button class="admin-tab"        data-pane="config"         onclick="switchAdminTab('config')">Config</button>
+        </div>
+
+        <div class="admin-pane active" id="pane-tipos">
+            <ul class="admin-list" id="listaTipos"></ul>
+            <div class="admin-add">
+                <input type="color" id="novoTipoCor" value="#4caf50">
+                <input type="text" id="novoTipoLabel" placeholder="Nome do tipo (ex.: Urgente)">
+                <button class="btn btn-primary" onclick="addTipo()">Adicionar</button>
+            </div>
+        </div>
+
+        <div class="admin-pane" id="pane-status">
+            <ul class="admin-list" id="listaStatus"></ul>
+            <div class="admin-add">
+                <input type="color" id="novoStatusCor" value="#9e9e9e">
+                <input type="text" id="novoStatusLabel" placeholder="Nome do status (ex.: Pausado)">
+                <button class="btn btn-primary" onclick="addStatus()">Adicionar</button>
+            </div>
+        </div>
+
+        <div class="admin-pane" id="pane-responsaveis">
+            <ul class="admin-list" id="listaResponsaveis"></ul>
+            <div class="admin-add">
+                <input type="text" id="novoResponsavel" placeholder="Nome do responsável" onkeydown="if(event.key==='Enter') addResponsavel()">
+                <button class="btn btn-primary" onclick="addResponsavel()">Adicionar</button>
+            </div>
+        </div>
+
+        <div class="admin-pane" id="pane-setores">
+            <ul class="admin-list" id="listaSetores"></ul>
+            <div class="admin-add">
+                <input type="text" id="novoSetor" placeholder="Nome do setor" onkeydown="if(event.key==='Enter') addSetor()">
+                <button class="btn btn-primary" onclick="addSetor()">Adicionar</button>
+            </div>
+        </div>
+
+        <div class="admin-pane" id="pane-areas">
+            <ul class="admin-list" id="listaAreas"></ul>
+            <div class="admin-add">
+                <input type="text" id="novaArea" placeholder="Nome da área" onkeydown="if(event.key==='Enter') addArea()">
+                <button class="btn btn-primary" onclick="addArea()">Adicionar</button>
+            </div>
+        </div>
+
+        <div class="admin-pane" id="pane-aparencia">
+            <div class="field">
+                <label>Tipo de fundo</label>
+                <select id="bgTipoSelect" onchange="trocarBgTipo()">
+                    <option value="cor">Cor sólida</option>
+                    <option value="imagem">Imagem do repositório</option>
+                </select>
+            </div>
+            <div class="field" id="bgCorWrap">
+                <label>Cor de fundo</label>
+                <input type="color" id="bgCor" onchange="salvarBgCor()" style="max-width:120px;">
+            </div>
+            <div class="field" id="bgImagemWrap" style="display:none;">
+                <label>Imagens disponíveis</label>
+                <div id="bgLista" class="bg-lista"></div>
+            </div>
+            <div class="field">
+                <label>Pré-visualização</label>
+                <div id="bgPreview" class="bg-preview"></div>
+            </div>
+            <div class="field">
+                <label>Tamanho do texto por tela</label>
+                <div id="cfgTamanhos"></div>
+            </div>
+        </div>
+
+        <div class="admin-pane" id="pane-tema">
+            <div class="field">
+                <label>Tema ativo</label>
+                <div class="theme-preset-grid" id="themePresetsGrid"></div>
+            </div>
+            <div class="field" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                <button class="btn btn-secondary" onclick="duplicarTemaAtivo()">Duplicar tema</button>
+                <button class="btn btn-danger" id="btnExcluirTema" onclick="excluirTemaAtivo()">Excluir tema</button>
+                <button class="btn btn-secondary" onclick="resetarTemaAtivo()">Restaurar padrão</button>
+            </div>
+            <div class="field">
+                <label>Nome do tema</label>
+                <input type="text" id="temaNomeInput" onchange="renomearTemaAtivo(this.value)">
+            </div>
+            <h3 style="color:var(--text-heading);font-family:var(--font-heading);font-size:14px;margin:16px 0 10px;text-transform:uppercase;letter-spacing:1px;">Cores</h3>
+            <div class="theme-grid" id="themeColorGrid"></div>
+            <h3 style="color:var(--text-heading);font-family:var(--font-heading);font-size:14px;margin:16px 0 10px;text-transform:uppercase;letter-spacing:1px;">Tipografia</h3>
+            <div class="theme-grid" id="themeFontGrid"></div>
+            <h3 style="color:var(--text-heading);font-family:var(--font-heading);font-size:14px;margin:16px 0 10px;text-transform:uppercase;letter-spacing:1px;">Formas e efeitos</h3>
+            <div class="theme-grid" id="themeShapeGrid"></div>
+        </div>
+
+        <div class="admin-pane" id="pane-config">
+            <h3 style="color:var(--text-heading);font-family:var(--font-heading);font-size:14px;margin:0 0 10px;text-transform:uppercase;letter-spacing:1px;">Salvamento automático</h3>
+            <div class="config-row">
+                <div class="config-lbl">
+                    Ativar auto-save
+                    <span class="config-hint">Salva automaticamente após alterações. Se desligado, você salva manualmente.</span>
+                </div>
+                <select id="cfgAutosave" onchange="salvarConfigAutosave()" style="width:110px;">
+                    <option value="1">Ligado</option>
+                    <option value="0">Desligado</option>
+                </select>
+            </div>
+            <div class="config-row">
+                <div class="config-lbl">
+                    Tempo de espera (debounce)
+                    <span class="config-hint">Segundos sem alterações antes de salvar. Valores altos = menos commits.</span>
+                </div>
+                <input type="number" id="cfgDebounce" min="1" max="30" onchange="salvarConfigAutosave()" style="width:80px;">
+            </div>
+            <div class="config-row">
+                <div class="config-lbl">
+                    Salvar imediatamente ao arrastar
+                    <span class="config-hint">Aplica-se a drag-and-drop de eventos.</span>
+                </div>
+                <select id="cfgDrag" onchange="salvarConfigAutosave()" style="width:110px;">
+                    <option value="1">Sim</option>
+                    <option value="0">Não</option>
+                </select>
+            </div>
+            <div class="field" style="margin-top:14px;">
+                <button class="btn btn-secondary" onclick="forcarSalvamento()">Forçar salvamento agora</button>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-secondary left" onclick="fazerLogout()">Sair</button>
+            <button class="btn btn-primary" onclick="fecharAdmin()">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════ OVERLAYS AUXILIARES ══════════════ -->
+<div class="upload-progress" id="uploadProgress" style="display:none;">
+    <div class="spinner"></div>
+    <span id="uploadProgressText">Enviando…</span>
+</div>
+
+<div class="nota-context-menu" id="notaContextMenu">
+    <button onclick="ctxEncaminharInbox()">Encaminhar para o Inbox</button>
+    <button onclick="ctxEncaminharComData()">Encaminhar para uma data…</button>
+    <div class="separator"></div>
+    <button onclick="ctxCopiar()">Copiar</button>
+</div>
+
+<!-- ══════════════ SCRIPTS (ordem importa!) ══════════════ -->
+<script src="js/config.js"></script>
+<script src="js/state.js"></script>
+<script src="js/helpers.js"></script>
+<script src="js/db.js"></script>
+<script src="js/autosave.js"></script>
+<script src="js/background.js"></script>
+<script src="js/temas.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/rte.js"></script>
+<script src="js/links.js"></script>
+<script src="js/checklist.js"></script>
+<script src="js/menus.js"></script>
+<script src="js/botoes.js"></script>
+
+<script src="js/views/shared.js"></script>
+<script src="js/views/mes.js"></script>
+<script src="js/views/semana.js"></script>
+<script src="js/views/dia.js"></script>
+<script src="js/views/quadro.js"></script>
+<script src="js/views/inbox.js"></script>
+<script src="js/views/notas.js"></script>
+<script src="js/views/registros.js"></script>
+<script src="js/views/reunioes.js"></script>
+<script src="js/views/plano.js"></script>
+
+<script src="js/modais/dia.js"></script>
+<script src="js/modais/evento.js"></script>
+<script src="js/modais/admin.js"></script>
+
+<script src="js/drag-drop.js"></script>
+<script src="js/mencoes.js"></script>
+<script src="js/context-menu.js"></script>
+
+<script src="js/router.js"></script>
+<script src="js/init.js"></script>
+</body>
+</html>

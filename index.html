@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sharkbite · Ambientes</title>
+<link rel="icon" type="image/png" href="img/logo/logo_shark.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+
+<header class="appbar">
+    <img src="img/logo/logo_shark.png" alt="">
+    <b>Sharkbite</b>
+    <button class="btn ghost" onclick="alternarTema()">Tema</button>
+</header>
+
+<main>
+    <div class="head">
+        <h1>Ambientes</h1>
+        <div class="head-acts">
+            <button class="btn sec" id="btnArq" onclick="alternarArquivados()">Ver arquivados</button>
+            <button class="btn" onclick="abrirModal()">Novo ambiente</button>
+        </div>
+    </div>
+
+    <div class="grid" id="lista">
+        <div class="vazio">Carregando ambientes…</div>
+    </div>
+</main>
+
+<!-- ══════════════ MODAL DE NOVO AMBIENTE ══════════════ -->
+<div class="overlay" id="modal" onclick="if(event.target===this) fecharModal()">
+    <div class="modal">
+        <h2>Novo ambiente</h2>
+
+        <div class="field">
+            <label for="nomeAmb">Nome</label>
+            <input type="text" id="nomeAmb" maxlength="60"
+                   placeholder="Ex.: Equipe de BI"
+                   onkeydown="if(event.key==='Enter') criar()">
+        </div>
+
+        <div class="row">
+            <div class="field">
+                <label for="corAmb">Cor</label>
+                <input type="color" id="corAmb" value="#0f9fb0">
+            </div>
+            <div class="field">
+                <label for="icoAmb">Ícone (emoji)</label>
+                <input type="text" id="icoAmb" maxlength="4" value="📋">
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn sec" onclick="fecharModal()">Cancelar</button>
+            <button class="btn" onclick="criar()">Criar ambiente</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/index.js"></script>
+</body>
+</html>

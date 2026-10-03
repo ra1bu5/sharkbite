@@ -1,0 +1,504 @@
+/* ============================================================
+   08-reunioes.css — Atas de reunião (2 níveis)
+   Depende de: 01-base.css, 03-componentes.css, 06-notas.css
+   ============================================================ */
+
+/* Sidebar de reuniões */
+.reun-sidebar .btn-nova-nota {
+    margin-bottom: 8px;
+}
+.reun-lista {
+    gap: 3px !important;
+}
+
+/* ============================================================
+   SÉRIE (nível 1)
+============================================================ */
+.reun-serie {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.reun-serie-head {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-heading);
+    font-size: 14px;
+    font-weight: 700;
+}
+.reun-serie-head:hover { background: var(--bg-hover); }
+.reun-serie-head.ativa {
+    background: var(--bg-selected);
+    border-color: var(--border-color);
+}
+
+.reun-arrow {
+    width: 14px;
+    flex: 0 0 14px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+.reun-cor-dot {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 9px;
+    border-radius: 50%;
+}
+.reun-serie-nome {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reun-mini-add,
+.reun-mini-del {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.reun-mini-add { font-size: 17px; }
+.reun-mini-del { font-size: 16px; }
+.reun-mini-add:hover {
+    background: var(--bg-hover);
+    color: var(--primary);
+}
+.reun-mini-del:hover {
+    background: rgba(220,53,69,.10);
+    color: var(--danger);
+}
+
+/* ============================================================
+   ENTRADAS / DATAS DA REUNIÃO (nível 2)
+============================================================ */
+.reun-entradas {
+    list-style: none;
+    margin: 2px 0 7px;
+    padding: 0 0 0 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.reun-entrada-item {
+    display: flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 13px;
+    cursor: pointer;
+}
+.reun-entrada-item:hover { background: var(--bg-hover); }
+.reun-entrada-item.ativa {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--text-on-primary);
+    font-weight: 700;
+}
+.reun-vazio-mini {
+    padding: 6px 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* ============================================================
+   EDITOR DA REUNIÃO
+============================================================ */
+.reun-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+    overflow-y: auto;
+    padding: 2px 4px 24px;
+}
+
+/* Cabeçalho da reunião */
+.reun-editor-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-color);
+}
+.reun-editor-top input[type="date"] {
+    width: 150px;
+    padding: 9px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    background: var(--bg-container);
+    color: var(--text-heading);
+    font: 800 20px var(--font-heading);
+}
+.reun-meta {
+    flex: 1;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* ============================================================
+   CARD DE INFORMAÇÕES
+============================================================ */
+.reun-info-card {
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--bg-container);
+}
+.reun-info-titulo {
+    margin-bottom: 14px;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text-heading);
+}
+
+.reun-info-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+}
+.reun-info-grid .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.reun-info-grid .field-full {
+    grid-column: 1 / -1;
+}
+.reun-info-grid label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.reun-info-grid input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font: 500 14px var(--font-body);
+}
+.reun-info-grid input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* ============================================================
+   SELETOR MÚLTIPLO DE PARTICIPANTES
+============================================================ */
+.reun-multi { position: relative; }
+
+.reun-multi-input {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 6px 8px;
+    cursor: text;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-panel-alt);
+}
+.reun-multi-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.reun-participante-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.reun-participante-tag button {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+    color: inherit;
+    opacity: .7;
+}
+.reun-participante-tag button:hover { opacity: 1; }
+
+.reun-multi-input input[type=text] {
+    flex: 1;
+    min-width: 100px;
+    border: 0;
+    background: transparent;
+    outline: none;
+    font: 500 14px var(--font-body);
+    color: var(--text-color);
+}
+
+.reun-multi-menu {
+    display: none;
+    position: absolute;
+    left: 0; right: 0;
+    top: calc(100% + 4px);
+    z-index: 50;
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 4px;
+    background: var(--bg-container);
+    border: 1px solid var(--border-color-strong);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+.reun-multi-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.reun-multi-option input[type=checkbox] {
+    flex: 0 0 16px;
+    width: 16px; height: 16px;
+    margin: 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+.reun-multi-option .badge {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: left;
+}
+.reun-multi-option:hover { background: var(--bg-panel-dark); }
+
+/* ============================================================
+   DATA E HORA DA REUNIÃO
+============================================================ */
+.reun-datahora {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.reun-datahora input[type=date] {
+    flex: 1;
+    min-width: 0;
+}
+.reun-hora-label {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+.reun-hora {
+    width: 42px;
+    text-align: center;
+    padding: 8px 4px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font: 600 14px var(--font-body);
+}
+
+/* ============================================================
+   SEÇÕES DA ATA (Pautas, Pendências, Assuntos, Encaminhamentos)
+============================================================ */
+.reun-secao {
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--bg-container);
+}
+.reun-secao .sec-head {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.reun-secao .sec-head label {
+    flex: 1;
+    color: var(--text-heading);
+    font-size: 15px;
+    font-weight: 800;
+}
+.reun-secao .sec-tools {
+    display: flex;
+    align-items: center;
+}
+
+/* Linha simples (textarea + botão excluir) */
+.reun-linha-simples {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-bottom: 7px;
+}
+.reun-simples-input {
+    flex: 1;
+    min-width: 0;
+    resize: none;
+    overflow: hidden;
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font: 500 14px var(--font-body);
+    line-height: 1.4;
+}
+.reun-simples-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* ============================================================
+   RTE DAS SEÇÕES (barra aparece só quando focado)
+============================================================ */
+.reun-rte-secao {
+    padding: 0;
+    overflow: visible;
+}
+.reun-rte-wrap { position: relative; }
+
+.reun-rte-toolbar {
+    display: none;
+    margin-bottom: 8px;
+}
+.reun-rte-wrap.ativo .reun-rte-toolbar { display: block; }
+
+.reun-rte-editor {
+    min-height: 150px;
+    padding: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-container);
+    color: var(--text-color);
+    font: 400 14px/1.55 var(--font-body);
+    outline: none;
+    overflow-y: auto;
+}
+.reun-rte-editor:focus { border-color: var(--primary); }
+.reun-rte-editor:empty::before {
+    content: attr(data-placeholder);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+.reun-rte-editor ul,
+.reun-rte-editor ol { padding-left: 24px; }
+.reun-rte-editor img { max-width: 100%; }
+.reun-rte-editor a { color: var(--primary); }
+
+/* ============================================================
+   TABELAS (Pendências / Encaminhamentos)
+============================================================ */
+.reun-tabela-head {
+    display: grid;
+    grid-template-columns:
+        minmax(0,1fr)
+        140px
+        135px
+        140px
+        30px;
+    gap: 7px;
+    margin-bottom: 5px;
+    padding: 0 2px;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.reun-linha-tabela {
+    display: grid;
+    grid-template-columns:
+        minmax(0,1fr)
+        140px
+        135px
+        140px
+        30px;
+    align-items: start;
+    gap: 7px;
+    margin-bottom: 7px;
+}
+.reun-linha-tabela .reun-tab-texto {
+    width: 100%;
+    box-sizing: border-box;
+    resize: none;
+    overflow: hidden;
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font: 500 14px var(--font-body);
+}
+.reun-linha-tabela select,
+.reun-linha-tabela input[type="date"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font: 500 12px var(--font-body);
+}
+
+/* Estado vazio do editor */
+.reun-vazio-editor {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* ============================================================
+   RESPONSIVO
+============================================================ */
+@media (max-width: 700px) {
+    .reun-info-grid { grid-template-columns: 1fr; }
+    .reun-info-grid .field-full { grid-column: auto; }
+
+    .reun-linha-tabela,
+    .reun-tabela-head {
+        grid-template-columns: minmax(0,1fr) 30px;
+    }
+    .reun-tabela-head span:not(:first-child) { display: none; }
+    .reun-linha-tabela .reun-tab-resp,
+    .reun-linha-tabela .reun-tab-prazo,
+    .reun-linha-tabela .reun-tab-status {
+        grid-column: 1 / 2;
+    }
+    .reun-linha-tabela .check-delete {
+        grid-row: 1 / span 4;
+    }
+}

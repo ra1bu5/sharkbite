@@ -1,0 +1,1 @@
+// Alternar tema, abrir admin e salvar.

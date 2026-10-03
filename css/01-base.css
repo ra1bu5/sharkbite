@@ -1,0 +1,98 @@
+/* ============================================================
+   01-base.css — Variáveis, reset, body e container principal
+   Depende de: nada (é o primeiro CSS carregado)
+   ============================================================ */
+
+/* ---------- Variáveis de tema ---------- */
+:root {
+    --bg-body: #f4f7fa; --bg-body-image: none;
+    --bg-container: #ffffff; --bg-panel: #f8fafc; --bg-panel-alt: #ffffff;
+    --bg-panel-dark: #f0f4f8; --bg-card: #ffffff;
+    --border-color: #e6edf5; --border-color-strong: #d1d8e2;
+    --border-style: solid; --border-width: 1px;
+    --text-color: #333; --text-muted: #5a7ba3; --text-heading: #163c6d; --text-on-primary: #ffffff;
+    --primary: #163c6d; --primary-hover: #0e2b4f;
+    --secondary: #2b6ca3; --secondary-hover: #1f5280;
+    --success: #1a9c4a; --success-hover: #13803b;
+    --danger: #dc3545; --danger-hover: #a71d2a;
+    --admin-bg: #7a4b00; --admin-hover: #5d3900;
+    --filter-bg: #fff7e6; --filter-border: #f5d99b; --filter-text: #7a4b00;
+    --cal-head-bg: #163c6d; --cal-head-weekend: #1f4d85; --cal-head-text: #ffffff;
+    --cal-cell-bg: #ffffff; --cal-cell-hover: #f8fbff; --cal-cell-other: #f8fafc;
+    --day-badge-bg: #163c6d; --day-badge-text: #ffffff;
+    --day-number-color: #163c6d; --day-number-weekend: #2b6ca3; --day-number-other: #c5cdd6;
+    --day-header-bg: #163c6d; --day-header-text: #ffffff;
+    --day-strip-bg: #ffffff; --day-strip-bg-active: #163c6d;
+    --day-strip-text: #163c6d; --day-strip-text-active: #ffffff;
+    --day-strip-hoje-bg: #f5a623; --day-strip-hoje-text: #ffffff;
+    --toolbar-bg: #f8fafc; --toolbar-border: #e6edf5;
+    --modal-bg: #ffffff; --modal-overlay: rgba(22,60,109,.55); --modal-border: none;
+    --bg-hover: #f0f4f8; --bg-selected: #e2ecf5;
+    --font-body: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-heading: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-mono: 'Courier New', monospace;
+    --font-size-base: 15px; --font-size-h1: 40px;
+    --font-weight-h1: 900; --letter-spacing-h1: 1px; --transform-h1: uppercase;
+    --btn-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --btn-font-size: 13px; --btn-text-transform: none; --btn-letter-spacing: 0;
+    --radius: 8px; --radius-sm: 4px; --radius-lg: 12px; --btn-radius: 6px;
+    --shadow: 0 4px 16px rgba(22,60,109,.08);
+    --btn-shadow: none; --text-shadow-h1: none;
+    --btn-border-style: none; --btn-border-width: 0px; --btn-border-color: transparent;
+}
+
+/* ---------- Reset ---------- */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+/* ---------- Corpo (base) ---------- */
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-body);
+    background-image: var(--bg-body-image);
+    background-attachment: fixed; background-size: cover; background-position: center;
+    color: var(--text-color); min-height: 100vh; font-size: var(--font-size-base);
+}
+
+/* ---------- Container principal ---------- */
+.container {
+    margin: 0 auto;
+    background: var(--bg-container);
+    box-shadow: var(--shadow);
+    border: var(--border-width) var(--border-style) var(--border-color);
+}
+
+/* ---------- Responsivo: corpo e container ---------- */
+body { padding: clamp(4px, 1vw, 14px); }
+
+.container {
+    width: 100%;
+    max-width: min(1800px, 100%);
+    padding: clamp(10px, 2vw, 26px);
+    border-radius: var(--radius-lg);
+}
+
+/* ---------- SHARKBITE: identidade (padding do container) ---------- */
+.container { padding: 0 0 12px !important; }
+
+/* ---------- Sem contorno claro em volta do cabeçalho ---------- */
+.container { border: 0; }
+
+/* ---------- Casca fixa: só o conteúdo rola ---------- */
+html, body { height: 100%; }
+body {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0 !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: 0 !important;
+}

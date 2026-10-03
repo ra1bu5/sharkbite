@@ -1,0 +1,438 @@
+/* ============================================================
+   07-registros.css — Change Log (histórico de modificações)
+   Depende de: 01-base.css, 03-componentes.css, 06-notas.css
+   ============================================================ */
+
+/* Sidebar de registros usa o mesmo layout das notas */
+.registros-view .notas-sidebar {
+    max-height: 70vh;
+}
+
+/* ============================================================
+   PRODUTO / PAINEL (nível 1)
+============================================================ */
+.registro-produto {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.registro-produto-head {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.registro-produto-head:hover { background: var(--bg-hover); }
+.registro-produto-head.ativa { background: var(--bg-selected); }
+
+.registro-arrow {
+    width: 14px;
+    flex: 0 0 14px;
+    font-size: 12px;
+}
+.registro-cor-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex: 0 0 9px;
+}
+.registro-produto-nome {
+    flex: 1;
+    min-width: 0;
+    font-weight: 700;
+    white-space: normal;
+    overflow-wrap: break-word;
+    line-height: 1.3;
+}
+
+.registro-mini-add {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-size: 18px;
+    border-radius: 5px;
+}
+.registro-mini-add:hover { background: var(--bg-hover); }
+
+.registro-mini-edit {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-size: 15px;
+    border-radius: 5px;
+    color: var(--text-muted);
+}
+.registro-mini-edit:hover {
+    background: var(--bg-hover);
+    color: var(--primary);
+}
+
+.registro-mini-del {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-size: 17px;
+    border-radius: 5px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+.registro-mini-del:hover {
+    background: rgba(220,53,69,.10);
+    color: var(--danger);
+}
+
+/* ============================================================
+   ENTRADAS (nível 2 - logs)
+============================================================ */
+.registro-entradas {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 4px 24px;
+}
+
+.registro-entrada-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    min-height: 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.registro-entrada-item:hover { background: var(--bg-hover); }
+.registro-entrada-item.ativa { background: var(--bg-selected); }
+
+.registro-entrada-titulo {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.registro-entrada-data {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.registro-vazio-mini {
+    padding: 6px 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   CONTEÚDO DA DIREITA (lista de logs)
+============================================================ */
+.registro-lista-conteudo {
+    width: 100%;
+    padding: 24px;
+}
+.registro-lista-titulo {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-heading);
+    margin-bottom: 4px;
+}
+.registro-lista-subtitulo {
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+.registro-lista-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+.registro-lista-head .registro-lista-titulo,
+.registro-lista-head .registro-lista-subtitulo {
+    margin-bottom: 0;
+}
+.registro-lista-head .registro-lista-titulo { margin-bottom: 4px; }
+.registro-lista-acoes {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.registro-lista-vazio {
+    padding: 30px 0;
+    color: var(--text-muted);
+}
+
+/* Card de log (na lista) */
+.registro-card {
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+}
+.registro-card:hover { background: var(--bg-hover); }
+.registro-card-data {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+.registro-card-titulo {
+    font-size: 15px;
+    font-weight: 700;
+}
+.registro-card-link {
+    margin-top: 7px;
+    font-size: 12px;
+    color: var(--primary);
+}
+
+/* ============================================================
+   FORMULÁRIO DE LOG (edição)
+============================================================ */
+.registro-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 4px 2px 20px;
+    overflow-y: auto;
+}
+.registro-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.registro-campo label {
+    font-weight: 800;
+    color: var(--text-heading);
+    font-size: 14px;
+}
+.registro-campo input,
+.registro-campo select,
+.registro-campo textarea {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--border-color-strong);
+    background: var(--bg-container);
+    color: var(--text-color);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 15px;
+}
+.registro-campo input { font-weight: 600; }
+.registro-campo textarea {
+    min-height: 15px;
+    resize: vertical;
+    line-height: 1.5;
+}
+#registroResolucao { min-height: 220px; }
+
+.registro-row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+@media (max-width: 480px) {
+    .registro-row2 { grid-template-columns: 1fr; }
+}
+
+.registro-acoes {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 6px;
+    border-top: 1px solid var(--border-color);
+}
+.registro-log-acoes {
+    display: flex;
+    gap: 6px;
+    margin-right: 10px;
+}
+
+/* ============================================================
+   VIEW DE LOG (somente leitura)
+============================================================ */
+.registro-view {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 4px 2px 20px;
+}
+.registro-view-campo label {
+    display: block;
+    font-weight: 800;
+    color: var(--text-heading);
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+.registro-view-valor {
+    padding: 9px 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-panel);
+    color: var(--text-color);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ============================================================
+   ANEXOS DO LOG
+============================================================ */
+.registro-anexos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.registro-anexo-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-panel);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--secondary);
+    font-weight: 600;
+    font-size: 14px;
+}
+.registro-anexo-item:hover { background: var(--bg-panel-dark); }
+.registro-anexo-item a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    color: var(--secondary);
+    text-decoration: none;
+    font-weight: 600;
+    overflow: hidden;
+}
+.registro-anexo-nome {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.registro-anexo-del {
+    border: 0;
+    background: transparent;
+    color: var(--danger);
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 16px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+}
+.registro-anexo-del:hover {
+    background: rgba(220,53,69,.10);
+    border-radius: 4px;
+}
+
+/* ============================================================
+   BARRA DE BUSCA DO CHANGE LOG
+============================================================ */
+.busca-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    background: var(--filter-bg);
+    border: var(--border-width) var(--border-style) var(--filter-border);
+    padding: 8px 12px;
+    margin: 16px 20px 0;
+    border-radius: var(--radius);
+}
+.busca-bar .lbl {
+    font-family: var(--font-heading);
+    font-size: 11px;
+    color: var(--filter-text);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+.busca-bar select {
+    border: var(--border-width) var(--border-style) var(--filter-border);
+    background: var(--bg-panel-alt);
+    color: var(--filter-text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+}
+.busca-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1 1 260px;
+    max-width: 560px;
+}
+.busca-input-wrap .ic {
+    position: absolute;
+    left: 10px;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+.busca-input-wrap input {
+    width: 100%;
+    padding: 7px 10px 7px 32px;
+    border: var(--border-width) var(--border-style) var(--filter-border);
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font-family: var(--font-body);
+    font-size: 14px;
+    border-radius: var(--radius-sm);
+}
+.busca-input-wrap input:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: -1px;
+}
+.busca-bar .count {
+    margin-left: auto;
+    color: var(--filter-text);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* Destaque dos termos encontrados nos cards */
+.registro-card mark {
+    background: #fff3a3;
+    color: #000;
+    border-radius: 2px;
+    padding: 0 1px;
+}
+.registro-card-trecho {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+.registro-card-trecho .badge { font-size: 12px; }
+
+@media (max-width: 700px) {
+    .busca-bar {
+        margin: 8px 10px 0;
+        padding: 8px;
+    }
+    .busca-bar select,
+    .busca-input-wrap {
+        flex: 1 1 100%;
+        max-width: none;
+    }
+    .busca-bar .count { margin-left: 0; }
+}

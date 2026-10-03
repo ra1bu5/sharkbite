@@ -1,0 +1,397 @@
+/* ============================================================
+   10-admin.css — Painel de Administrador, Temas e Aparência
+   Depende de: 01-base.css, 03-componentes.css
+   ============================================================ */
+
+/* ============================================================
+   ABAS DO ADMIN
+============================================================ */
+.admin-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid var(--border-color-strong);
+    flex-wrap: wrap;
+}
+.admin-tab {
+    background: var(--bg-panel-dark);
+    color: var(--text-muted);
+    border: var(--border-width) var(--border-style) var(--border-color);
+    border-bottom: none;
+    border-top-left-radius: var(--radius-sm);
+    border-top-right-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 9px 12px;
+    margin-bottom: -2px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+.admin-tab.active {
+    background: var(--primary);
+    color: var(--text-on-primary);
+    border-color: var(--primary);
+}
+
+.admin-pane {
+    display: none;
+    padding: 14px 0 0;
+}
+.admin-pane.active { display: block; }
+
+/* ============================================================
+   LISTAS DO ADMIN (tipos, status, responsáveis, áreas, setores)
+============================================================ */
+.admin-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 14px;
+}
+.admin-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-panel);
+    border: var(--border-width) var(--border-style) var(--border-color);
+    padding: 6px 8px;
+    margin-bottom: 5px;
+    border-radius: var(--radius-sm);
+}
+.admin-list li .item-color {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color-strong);
+    flex-shrink: 0;
+}
+.admin-list li .item-label {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text-heading);
+    font-family: var(--font-body);
+    font-size: 15px;
+    border: 1px solid transparent;
+    background: transparent;
+}
+.admin-list li input[type=color] {
+    width: 34px;
+    height: 28px;
+    padding: 1px;
+    border: 1px solid var(--border-color-strong);
+    cursor: pointer;
+    background: var(--bg-panel-alt);
+    border-radius: var(--radius-sm);
+}
+.admin-list li .item-actions {
+    display: flex;
+    gap: 3px;
+}
+
+/* Formulário de adicionar item */
+.admin-add {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: var(--bg-panel);
+    border: var(--border-width) var(--border-style) var(--border-color);
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+}
+.admin-add input[type=text],
+.admin-add input[type=number] {
+    flex: 1;
+    min-width: 100px;
+    padding: 6px 8px;
+    border: var(--border-width) var(--border-style) var(--border-color-strong);
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font-family: var(--font-body);
+    font-size: 15px;
+    border-radius: var(--radius-sm);
+}
+.admin-add input[type=color] {
+    width: 40px;
+    height: 32px;
+    padding: 2px;
+    border: 1px solid var(--border-color-strong);
+    background: var(--bg-panel-alt);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+}
+
+/* Estado vazio */
+.admin-empty {
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    text-align: center;
+    padding: 12px;
+    border: 2px dashed var(--border-color-strong);
+    margin-bottom: 12px;
+    font-size: 15px;
+    border-radius: var(--radius-sm);
+}
+
+/* ============================================================
+   APARÊNCIA — fundo (cor / imagem)
+============================================================ */
+.bg-lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    margin-top: 6px;
+}
+.bg-item {
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: .15s;
+    background: var(--bg-panel-alt);
+    position: relative;
+}
+.bg-item:hover { border-color: var(--secondary); }
+.bg-item.selected {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(22,60,109,.15);
+}
+.bg-item img {
+    display: block;
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+}
+.bg-item .bg-nome {
+    font-family: var(--font-body);
+    font-size: 12px;
+    padding: 5px;
+    color: var(--text-heading);
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bg-item .bg-check {
+    position: absolute;
+    top: 5px; right: 5px;
+    background: var(--primary);
+    color: var(--text-on-primary);
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+.bg-item.selected .bg-check { display: flex; }
+
+.bg-vazio {
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 14px;
+    padding: 10px;
+    text-align: center;
+    border: 2px dashed var(--border-color-strong);
+    border-radius: var(--radius-sm);
+}
+.bg-preview {
+    height: 90px;
+    border: 2px solid var(--border-color-strong);
+    border-radius: var(--radius);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-heading);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 12px;
+}
+.bg-preview .preview-tag {
+    background: var(--bg-container);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+/* Foto do usuário */
+.foto-preview {
+    height: 100px;
+    width: 100px;
+    border: 2px solid var(--border-color-strong);
+    background: var(--bg-panel-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    border-radius: var(--radius);
+}
+.foto-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* ============================================================
+   EDITOR DE TEMA
+============================================================ */
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.theme-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-panel);
+    border: var(--border-width) var(--border-style) var(--border-color);
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+}
+.theme-field label {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-heading);
+    text-transform: none;
+    margin: 0;
+    letter-spacing: 0;
+    font-family: var(--font-body);
+}
+.theme-field input[type=color] {
+    width: 40px;
+    height: 32px;
+    padding: 2px;
+    border: 1px solid var(--border-color-strong);
+    cursor: pointer;
+    background: var(--bg-panel-alt);
+    border-radius: var(--radius-sm);
+}
+.theme-field input[type=text],
+.theme-field input[type=number] {
+    width: 130px;
+    padding: 5px 7px;
+    border: var(--border-width) var(--border-style) var(--border-color-strong);
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font-family: var(--font-body);
+    font-size: 13px;
+    border-radius: var(--radius-sm);
+}
+.theme-field select {
+    width: 130px;
+    padding: 5px 7px;
+    border: var(--border-width) var(--border-style) var(--border-color-strong);
+    background: var(--bg-panel-alt);
+    color: var(--text-color);
+    font-family: var(--font-body);
+    font-size: 13px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+/* Presets de tema */
+.theme-preset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.theme-preset-card {
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    cursor: pointer;
+    padding: 12px;
+    text-align: center;
+    transition: .15s;
+    background: var(--bg-panel-alt);
+    position: relative;
+}
+.theme-preset-card:hover { border-color: var(--secondary); }
+.theme-preset-card.selected {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(22,60,109,.15);
+}
+.theme-preset-card .preset-nome {
+    font-weight: 700;
+    color: var(--text-heading);
+    font-family: var(--font-body);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+.theme-preset-card .preset-badge {
+    position: absolute;
+    top: 5px; right: 5px;
+    background: var(--secondary);
+    color: var(--text-on-primary);
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+.theme-preset-card .preset-preview {
+    height: 60px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+    font-size: 22px;
+    font-weight: 900;
+}
+
+/* ============================================================
+   CONFIG (autosave)
+============================================================ */
+.config-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--bg-panel);
+    border: var(--border-width) var(--border-style) var(--border-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+}
+.config-row .config-lbl {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text-heading);
+    font-size: 14px;
+}
+.config-row .config-hint {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+/* Tamanho do texto por tela (Aparência) */
+.tam-val {
+    min-width: 42px;
+    text-align: right;
+    font-weight: 700;
+    color: var(--text-heading);
+}
+#cfgTamanhos .config-row { gap: 12px; }
+
+/* ============================================================
+   RESPONSIVO
+============================================================ */
+@media (max-width: 560px) {
+    .theme-grid { grid-template-columns: 1fr; }
+    .theme-field { flex-wrap: wrap; }
+    .theme-field input[type=text],
+    .theme-field input[type=number],
+    .theme-field select { width: 100%; }
+}
