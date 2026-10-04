@@ -10,6 +10,20 @@ function montarLinhas(d){
     const L = {};
     TABELAS.forEach(t => L[t] = {});
 
+   const CHAVES_GLOBAIS = new Set([
+  'tipos','status','responsaveis','areas','setores'
+]);
+
+Object.keys(d.config || {}).forEach(k => {
+  if (d.config[k] === undefined) return;
+  const chave = configParaBanco(k);
+  if (CHAVES_GLOBAIS.has(k)) {
+    L.config[chave] = { chave, valor: d.config[k] };        // tabela config
+  } else {
+    L.config_ambiente[chave] = { ambiente_id: AMBIENTE_ID, chave, valor: d.config[k] };
+  }
+});
+
     /* ---------- Config ---------- */
     Object.keys(d.config || {}).forEach(k => {
         if(d.config[k] === undefined) return;
