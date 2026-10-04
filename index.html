@@ -14,7 +14,10 @@
 <header class="appbar">
     <img src="img/logo/logo_shark.png" alt="">
     <b>Sharkbite</b>
+    <button class="btn ghost" id="btnAdminHeader" style="display:none"
+            onclick="location.href='admin.html'">Admin</button>
     <button class="btn ghost" onclick="alternarTema()">Tema</button>
+    <button class="btn ghost" onclick="sair()">Sair</button>
 </header>
 
 <main>
@@ -61,6 +64,11 @@
     </div>
 </div>
 
+<!-- ══════════════ SCRIPTS (ordem importa!) ══════════════ -->
+<script src="js/config.js"></script>
+<script src="js/state.js"></script>
+<script src="js/auth-guard.js"></script>
+<script src="js/helpers.js"></script>
 <script src="js/index.js"></script>
 </body>
 </html>
