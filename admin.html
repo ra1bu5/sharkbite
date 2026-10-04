@@ -133,6 +133,30 @@
 <script src="js/state.js"></script>
 <script src="js/auth-guard.js"></script>
 <script src="js/helpers.js"></script>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// Shim para admin.html — o admin.js foi escrito para ambiente.html
+// (onde existem render/popularFiltros/renderLegend/marcarAlterado).
+// Aqui essas funções não têm UI para atualizar, então são no-op,
+// exceto marcarAlterado, que salva SÓ as chaves globais direto no
+// Supabase (sem passar pelo pipeline de snapshot do ambiente).
+// ─────────────────────────────────────────────────────────────
+function render() {}
+function popularFiltros() {}
+function renderLegend() {}
+
+async function marcarAlterado(){
+  const CHAVES = ['tipos','status','responsaveis','areas','setores'];
+  for (const k of CHAVES) {
+    if (data.config[k] === undefined) continue;
+    const { error } = await sb.from('config')
+      .upsert({ chave: k, valor: data.config[k] }, { onConflict: 'chave' });
+    if (error) console.error('Erro salvando ' + k + ':', error.message);
+  }
+}
+</script>
+
 <script src="js/admin.js"></script>
 <script src="js/admin-page.js"></script>
 </body>
