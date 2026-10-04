@@ -192,5 +192,19 @@ const configParaBanco = k => CONFIG_CHAVES[k] || k;
 const configDoBanco   = k => CONFIG_CHAVES_INV[k] || k;
 
 /* Ordem respeita as chaves estrangeiras (pai antes do filho) */
-const TABELAS = ['config','registros_produtos','reunioes_series','plano_demandas','eventos','notas','registros_entradas','reunioes_entradas','plano_acoes'];
-const pkDe = t => t === 'config' ? 'chave' : 'id';
+const TABELAS = [
+  'config',
+  'config_ambiente',
+  'registros_produtos',
+  'reunioes_series',
+  'plano_demandas',
+  'eventos',
+  'notas',
+  'registros_entradas',
+  'reunioes_entradas',
+  'plano_acoes'
+];
+const pkDe = t =>
+  t === 'config'          ? 'chave' :
+  t === 'config_ambiente' ? ['ambiente_id','chave'] :
+  'id';
