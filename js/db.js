@@ -10,15 +10,18 @@ function montarLinhas(d){
     const L = {};
     TABELAS.forEach(t => L[t] = {});
 
-   const CHAVES_GLOBAIS = new Set([
-  'tipos','status','responsaveis','areas','setores'
-]);
+    const CHAVES_GLOBAIS = new Set([
+        'tipos','status','responsaveis','areas','setores'
+    ]);
 
-    /* ---------- Config ---------- */
     Object.keys(d.config || {}).forEach(k => {
         if(d.config[k] === undefined) return;
         const chave = configParaBanco(k);
-        L.config[chave] = { chave, valor: d.config[k] };
+        if (CHAVES_GLOBAIS.has(k)) {
+            L.config[chave] = { chave, valor: d.config[k] };
+        } else {
+            L.config_ambiente[chave] = { ambiente_id: AMBIENTE_ID, chave, valor: d.config[k] };
+        }
     });
 
     /* ---------- Eventos ---------- */
