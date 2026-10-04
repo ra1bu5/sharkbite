@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar · Sharkbite</title>
+<link rel="icon" type="image/png" href="img/logo/logo_shark.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#eaf0f6;--panel:#fff;--border:#e1e8f0;--text:#1f2d3d;--muted:#64788f;--heading:#0b2a4a;--primary:#0b2a4a;--primary-h:#123c66;--danger:#d64545}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI',sans-serif;padding:20px}
+.card{width:min(420px,100%);background:var(--panel);border-radius:16px;padding:32px;box-shadow:0 12px 40px rgba(11,42,74,.10)}
+.card img{width:48px;height:48px;display:block;margin:0 auto 10px}
+h1{margin:0 0 4px;text-align:center;color:var(--heading);font-size:24px;font-weight:800}
+.sub{margin:0 0 22px;text-align:center;color:var(--muted);font-size:14px}
+.tabs{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:18px}
+.tabs button{flex:1;padding:8px;border:0;border-radius:7px;background:transparent;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)}
+.tabs button.active{background:#fff;color:var(--heading);box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.field{margin-bottom:12px}
+.field label{display:block;margin-bottom:5px;font-size:12px;font-weight:700;color:var(--heading);text-transform:uppercase;letter-spacing:.5px}
+.field input{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;font-size:15px}
+.field input:focus{outline:none;border-color:var(--primary);background:#fff}
+.btn{width:100%;padding:12px;border:0;border-radius:8px;background:var(--primary);color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
+.btn:hover{background:var(--primary-h)}
+.btn:disabled{opacity:.6;cursor:wait}
+.msg{margin:8px 0;padding:10px 12px;border-radius:8px;font-size:13px;display:none}
+.msg.err{display:block;background:#fde8e8;color:var(--danger);border:1px solid #f5c2c2}
+.msg.ok {display:block;background:#e3f8ed;color:#1a9c4a;border:1px solid #b8e6ce}
+.rodape{margin-top:18px;text-align:center;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <img src="img/logo/logo_shark.png" alt="">
+  <h1>Sharkbite</h1>
+  <p class="sub" id="sub">Entre com sua conta</p>
+
+  <div class="tabs">
+    <button type="button" id="tabLogin"  class="active">Entrar</button>
+    <button type="button" id="tabSignup">Criar conta</button>
+  </div>
+
+  <form id="form" autocomplete="on">
+    <div class="field" id="fieldNome" style="display:none">
+      <label for="nome">Nome</label>
+      <input type="text" id="nome" autocomplete="name" maxlength="80">
+    </div>
+    <div class="field">
+      <label for="email">E-mail</label>
+      <input type="email" id="email" autocomplete="email" required>
+    </div>
+    <div class="field">
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" autocomplete="current-password" required minlength="6">
+    </div>
+
+    <div class="msg" id="msg"></div>
+    <button type="submit" class="btn" id="btnSubmit">Entrar</button>
+  </form>
+
+  <div class="rodape" id="rodape"></div>
+</div>
+
+<script>
+const SUPABASE_URL  = 'https://vaipqzmdsdanypuprxrk.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaXBxem1kc2RhbnlwdXByeHJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NDA0MTAsImV4cCI6MjEwNjExNjQxMH0.r5PBsVKPDDROHaBWbLpsnaezMmsdxc97pkm5205ji-c';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const $ = id => document.getElementById(id);
+let modo = 'login';
+
+function setModo(m){
+  modo = m;
+  $('tabLogin').classList.toggle('active',  m === 'login');
+  $('tabSignup').classList.toggle('active', m === 'signup');
+  $('fieldNome').style.display = m === 'signup' ? '' : 'none';
+  $('nome').required = m === 'signup';
+  $('btnSubmit').textContent = m === 'signup' ? 'Criar conta' : 'Entrar';
+  $('sub').textContent = m === 'signup' ? 'Crie sua conta para começar' : 'Entre com sua conta';
+  $('rodape').textContent = m === 'signup'
+    ? 'Após criar, peça a um administrador para liberar acesso.'
+    : '';
+  esconderMsg();
+}
+
+function mostrarMsg(txt, tipo){
+  const m = $('msg');
+  m.className = 'msg ' + (tipo || 'err');
+  m.textContent = txt;
+}
+function esconderMsg(){ $('msg').className = 'msg'; $('msg').textContent = ''; }
+
+$('tabLogin').onclick  = () => setModo('login');
+$('tabSignup').onclick = () => setModo('signup');
+
+// Se já logado, redireciona
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    const params = new URLSearchParams(location.search);
+    location.replace(params.get('next') || 'index.html');
+  }
+})();
+
+$('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  esconderMsg();
+
+  const email = $('email').value.trim();
+  const senha = $('senha').value;
+  const nome  = $('nome').value.trim();
+
+  $('btnSubmit').disabled = true;
+
+  try {
+    if (modo === 'signup') {
+      const { error } = await sb.auth.signUp({
+        email, password: senha,
+        options: { data: { nome } }
+      });
+      if (error) throw error;
+
+      mostrarMsg('Conta criada. Verifique seu e-mail se pedirmos confirmação e depois faça login.', 'ok');
+      setModo('login');
+      $('senha').value = '';
+
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password: senha });
+      if (error) throw error;
+
+      const params = new URLSearchParams(location.search);
+      location.replace(params.get('next') || 'index.html');
+    }
+  } catch (err) {
+    mostrarMsg(err.message || 'Erro inesperado.');
+  } finally {
+    $('btnSubmit').disabled = false;
+  }
+});
+</script>
+</body>
+</html>
