@@ -263,16 +263,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     render();
     atualizarBotaoSalvar();
-
-   /* Aguarda o guard de auth */
-   const ctx = await window.Auth.ready;
-   if (!ctx) return;   // vai ser redirecionado
-   authUser  = ctx.user;
-   authToken = 'supabase';
-   
-   /* Esconde o botão Admin para não-admins */
-   const btnAdmin = document.getElementById('btnAdmin');
-   if (btnAdmin && !window.Auth.isAdmin) btnAdmin.style.display = 'none';
    
    /* Carrega o botão de usuário/logout no header (opcional, ver abaixo) */
    if (localStorage.getItem(PEND_KEY) === '1') {
