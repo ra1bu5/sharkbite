@@ -1,26 +1,21 @@
 /* ============================================================
    index.js — Lógica da página de ambientes
+   Depende de: config.js, state.js, auth-guard.js, helpers.js
+   NÃO redefine sb / SUPABASE_URL / escapeHtml — usa os globais.
    ============================================================ */
-
-/* ---------- Supabase ---------- */
-const SUPABASE_URL  = 'https://vaipqzmdsdanypuprxrk.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhaXBxem1kc2RhbnlwdXByeHJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NDA0MTAsImV4cCI6MjEwNjExNjQxMH0.r5PBsVKPDDROHaBWbLpsnaezMmsdxc97pkm5205ji-c';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 /* ---------- Estado ---------- */
 let ambientes = [];
 let verArquivados = false;
 
-/* ---------- Helpers ---------- */
+/* ---------- Helpers locais ---------- */
 const $ = id => document.getElementById(id);
-const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({
-    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
-}[c]));
 const fmtData = s => s ? new Date(s).toLocaleDateString('pt-BR') : '';
 
 /* ============================================================
-   TEMA (claro / escuro)
-   Compartilha a mesma preferência usada dentro dos ambientes
+   TEMA (claro / escuro) — mecanismo próprio desta página
+   O index.css usa :root[data-theme=dark], que é independente
+   do sistema de temas CSS-vars do ambiente.html.
 ============================================================ */
 function aplicarTema(){
     const p = localStorage.getItem('sharkbite_tema');
@@ -38,13 +33,14 @@ function alternarTema(){
    CARREGAR / RENDERIZAR
 ============================================================ */
 async function carregar(){
-    const { data, error } = await sb.from('ambientes').select('*').order('id');
+    const { data: rows, error } = await sb.from('ambientes').select('*').order('id');
 
     if(error){
-        $('lista').innerHTML = `<div class="vazio">Não foi possível carregar os ambientes: ${esc(error.message)}</div>`;
+        $('lista').innerHTML =
+            `<div class="vazio">Não foi possível carregar os ambientes: ${escapeHtml(error.message)}</div>`;
         return;
     }
-    ambientes = data || [];
+    ambientes = rows || [];
     render();
 }
 
@@ -65,7 +61,7 @@ function render(){
     $('lista').innerHTML = lista.map(a => {
         const arq = a.ativo === false;
         return `<article class="card" tabindex="0"
-                     style="--c:${esc(a.cor || '#0f9fb0')}"
+                     style="--c:${escapeHtml(a.cor || '#0f9fb0')}"
                      onclick="abrir(${a.id})"
                      onkeydown="if(event.key==='Enter') abrir(${a.id})">
             <div class="acts">
@@ -74,8 +70,8 @@ function render(){
                 <button title="${arq ? 'Restaurar' : 'Arquivar'}"
                         onclick="event.stopPropagation(); alternarAtivo(${a.id})">${arq ? '↺' : '🗃'}</button>
             </div>
-            <div class="ico">${esc(a.icone || '📋')}</div>
-            <h2>${esc(a.nome)}</h2>
+            <div class="ico">${escapeHtml(a.icone || '📋')}</div>
+            <h2>${escapeHtml(a.nome)}</h2>
             <p>Criado em ${fmtData(a.criado_em)}</p>
         </article>`;
     }).join('');
@@ -179,7 +175,28 @@ async function alternarAtivo(id){
 }
 
 /* ============================================================
+   SAIR
+============================================================ */
+async function sair(){
+    await sb.auth.signOut();
+    // O auth-guard.js já redireciona no SIGNED_OUT; o replace abaixo
+    // é só um fallback caso o evento demore.
+    location.replace('login.html');
+}
+
+/* ============================================================
    BOOTSTRAP
 ============================================================ */
-aplicarTema();
-carregar();
+(async () => {
+    aplicarTema();                       // aplica o tema ANTES de tudo
+
+    const ctx = await window.Auth.ready; // auth-guard cuida do redirect
+    if (!ctx) return;                    // não logado → já está indo pro login
+
+    /* Só revela o botão Admin se for admin de verdade */
+    const btnAdm = document.getElementById('btnAdminHeader');
+    if (btnAdm && !window.Auth.isAdmin) btnAdm.style.display = 'none';
+    else if (btnAdm) btnAdm.style.display = '';
+
+    await carregar();
+})();
