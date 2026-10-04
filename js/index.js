@@ -110,13 +110,12 @@ async function criar(){
     const nome = $('nomeAmb').value.trim();
     if(!nome){ $('nomeAmb').focus(); return; }
 
-    if(!await garantirLogin()) return;
-
     const { data, error } = await sb.from('ambientes')
         .insert({
             nome,
             cor:   $('corAmb').value,
-            icone: $('icoAmb').value.trim() || '📋'
+            icone: $('icoAmb').value.trim() || '📋',
+            owner_id: window.Auth.user.id
         })
         .select()
         .single();
@@ -125,16 +124,6 @@ async function criar(){
         alert('Não foi possível criar o ambiente: ' + error.message);
         return;
     }
-
-   const { data, error } = await sb.from('ambientes')
-  .insert({
-    nome,
-    cor:   $('corAmb').value,
-    icone: $('icoAmb').value.trim() || '📋',
-    owner_id: window.Auth.user.id            // ← NOVO
-  })
-  .select()
-  .single();
 
     ambientes.push(data);
     verArquivados = false;
