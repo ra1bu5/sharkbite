@@ -191,9 +191,9 @@ function calcularDiferencas(){
         });
 
         /* config nunca é apagada por diff (chave ausente ≠ chave removida) */
-        dels[t] = t === 'config'
-            ? []
-            : Object.keys(ant).filter(k => !(k in atual[t])).map(Number);
+         dels[t] = (t === 'config' || t === 'config_ambiente')
+             ? []
+             : Object.keys(ant).filter(k => !(k in atual[t])).map(Number);
     });
 
     return { ups, dels, hashes };
@@ -209,19 +209,23 @@ async function sincronizarComBanco(){
 
     try {
         /* Upserts (pai antes do filho) */
-        for(const t of TABELAS){
-            const pk = pkDe(t);
-            for(let i = 0; i < ups[t].length; i += 100){
-                const lote = ups[t].slice(i, i + 100);
-                const { error } = await sb.from(t).upsert(lote, { onConflict: pk });
-                if(error) throw new Error(`${t}: ${error.message}`);
-                lote.forEach(r => { snapshot[t][r[pk]] = hashes[t][r[pk]]; });
-                ops += lote.length;
-            }
-        }
+         for(const t of TABELAS){
+             const pk = pkDe(t);
+             const pkStr = Array.isArray(pk) ? pk.join(',') : pk;
+             const pkCampo = Array.isArray(pk) ? pk[pk.length - 1] : pk;  // 'chave' pra config_ambiente
+         
+             for(let i = 0; i < ups[t].length; i += 100){
+                 const lote = ups[t].slice(i, i + 100);
+                 const { error } = await sb.from(t).upsert(lote, { onConflict: pkStr });
+                 if(error) throw new Error(`${t}: ${error.message}`);
+                 lote.forEach(r => { snapshot[t][r[pkCampo]] = hashes[t][r[pkCampo]]; });
+                 ops += lote.length;
+             }
+         }
 
         /* Deletes (filho antes do pai) */
         for(const t of [...TABELAS].reverse()){
+            if(t === 'config_ambiente'){
             for(let i = 0; i < dels[t].length; i += 100){
                 const lote = dels[t].slice(i, i + 100);
                 const { error } = await sb.from(t).delete().in(pkDe(t), lote);
@@ -250,15 +254,19 @@ function salvarAntesDeFecharKeepalive(){
         Prefer: 'resolution=merge-duplicates,return=minimal'
     };
 
-    TABELAS.forEach(t => {
-        if(ups[t].length){
-            fetch(`${SUPABASE_URL}/rest/v1/${t}?on_conflict=${pkDe(t)}`, {
+         TABELAS.forEach(t => {
+             if(ups[t].length){
+                 const pk = pkDe(t);
+                 const pkStr = Array.isArray(pk) ? pk.join(',') : pk;
+                 fetch(`${SUPABASE_URL}/rest/v1/${t}?on_conflict=${pkStr}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(ups[t]),
                 keepalive: true
             }).catch(() => {});
         }
+          if(dels[t].length && !Array.isArray(pkDe(t))){  // pula config_ambiente
+
         if(dels[t].length){
             fetch(`${SUPABASE_URL}/rest/v1/${t}?${pkDe(t)}=in.(${dels[t].join(',')})`, {
                 method: 'DELETE',
@@ -267,6 +275,7 @@ function salvarAntesDeFecharKeepalive(){
             }).catch(() => {});
         }
     });
+}
 }
 
 /* ============================================================
@@ -291,6 +300,7 @@ async function storageUpload(caminho, file){
 async function carregarDoSupabase(){
     const [
         { data: configRows, error: e1 },
+        { data: configAmbRows,   error: e1b },   // ← NOVO
         { data: eventos,    error: e2 },
         { data: notas,      error: e3 },
         { data: produtos,   error: e4 },
@@ -301,6 +311,7 @@ async function carregarDoSupabase(){
         { data: acoes,      error: e9 },
     ] = await Promise.all([
         sb.from('config').select('*'),
+        sb.from('config_ambiente').select('*').eq('ambiente_id', AMBIENTE_ID),  // ← NOVO
         sb.from('eventos').select('*').eq('ambiente_id', AMBIENTE_ID).order('ordem'),
         sb.from('notas').select('*').eq('ambiente_id', AMBIENTE_ID).order('criado_em'),
         sb.from('registros_produtos').select('*').eq('ambiente_id', AMBIENTE_ID),
@@ -316,9 +327,8 @@ async function carregarDoSupabase(){
 
     /* Reconstrói config como objeto (era chave/valor no banco) */
     const config = {};
-    (configRows || []).forEach(r => {
-        config[configDoBanco(r.chave)] = r.valor;
-    });
+    (configRows    || []).forEach(r => { config[configDoBanco(r.chave)] = r.valor; });
+    (configAmbRows || []).forEach(r => { config[configDoBanco(r.chave)] = r.valor; });
 
     /* Registros: junta produto + entradas */
     const registros = (produtos || []).map(p => ({
