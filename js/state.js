@@ -72,7 +72,7 @@ let toquePressTimer = null;
    AUTOSAVE — estado
 ============================================================ */
 let autosave = {
-    estado: 'salvo',           // 'salvo' | 'pendente' | 'salvando' | 'erro'
+    estado: 'idle',            // 'idle' | 'salvando' | 'salvo' | 'erro'
     timer: null,
     alteracoesPendentes: false,
     ultimoErro: null,
