@@ -35,28 +35,6 @@ function alternarTema(){
 }
 
 /* ============================================================
-   LOGIN (provisório, via prompt)
-   Será trocado pela tela de login quando ela existir
-============================================================ */
-async function garantirLogin(){
-    const { data: { session } } = await sb.auth.getSession();
-    if(session) return true;
-
-    const email = prompt('E-mail (admin):');
-    if(!email) return false;
-
-    const senha = prompt('Senha:');
-    if(!senha) return false;
-
-    const { error } = await sb.auth.signInWithPassword({ email, password: senha });
-    if(error){
-        alert('Login falhou: ' + error.message);
-        return false;
-    }
-    return true;
-}
-
-/* ============================================================
    CARREGAR / RENDERIZAR
 ============================================================ */
 async function carregar(){
@@ -147,6 +125,16 @@ async function criar(){
         alert('Não foi possível criar o ambiente: ' + error.message);
         return;
     }
+
+   const { data, error } = await sb.from('ambientes')
+  .insert({
+    nome,
+    cor:   $('corAmb').value,
+    icone: $('icoAmb').value.trim() || '📋',
+    owner_id: window.Auth.user.id            // ← NOVO
+  })
+  .select()
+  .single();
 
     ambientes.push(data);
     verArquivados = false;
