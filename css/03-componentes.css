@@ -57,11 +57,45 @@
 .ic { flex-shrink: 0; }
 
 /* ---------- Botão Salvar (autosave) ---------- */
-#btnSalvar { position: relative; transition: background .2s, color .2s; }
+/* ---------- Botão Salvar (autosave, ícones) ---------- */
+#btnSalvar {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    padding: 8px 12px;
+    transition: background .2s, color .2s;
+}
+#btnSalvar .ic { display: block; }
+
+/* Pendente: fundo amarelo, mantém o disquete */
 #btnSalvar.autosave-pendente { background: #d4a72c; color: #2a1a00; }
-#btnSalvar.autosave-pendente::after { content: ' ●'; font-size: 10px; vertical-align: middle; }
-#btnSalvar.autosave-salvando { background: #5a5a5a; cursor: wait; }
-#btnSalvar.autosave-erro { background: var(--danger); animation: pulseErro 1s infinite; }
+
+/* Salvando: fundo cinza, spinner girando */
+#btnSalvar.autosave-salvando {
+    background: #5a5a5a;
+    color: #fff;
+    cursor: wait;
+}
+#btnSalvar.autosave-salvando .ic {
+    animation: spinSave .9s linear infinite;
+}
+
+/* Sucesso: check verde */
+#btnSalvar.autosave-ok {
+    background: var(--success);
+    color: #fff;
+}
+
+/* Erro: alerta vermelho pulsante, persiste até salvar certo */
+#btnSalvar.autosave-erro {
+    background: var(--danger);
+    color: #fff;
+    animation: pulseErro 1s infinite;
+}
+
+@keyframes spinSave { to { transform: rotate(360deg); } }
 @keyframes pulseErro {
     0%, 100% { box-shadow: 0 0 0 0 rgba(220,53,69,.6); }
     50% { box-shadow: 0 0 0 6px rgba(220,53,69,0); }
