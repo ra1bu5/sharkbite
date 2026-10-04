@@ -259,16 +259,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     render();
     atualizarBotaoSalvar();
 
-    /* Restaura sessão do Supabase (se já estava logado) */
-    const { data: { session } } = await sb.auth.getSession();
-    if(session){
-        authUser  = session.user;
-        authToken = 'supabase';
-        if(localStorage.getItem(PEND_KEY) === '1'){
-            autosave.alteracoesPendentes = true;
-            atualizarBotaoSalvar();
-        }
-    }
+   /* Aguarda o guard de auth */
+   const ctx = await window.Auth.ready;
+   if (!ctx) return;   // vai ser redirecionado
+   authUser  = ctx.user;
+   authToken = 'supabase';
+   
+   /* Esconde o botão Admin para não-admins */
+   const btnAdmin = document.getElementById('btnAdmin');
+   if (btnAdmin && !window.Auth.isAdmin) btnAdmin.style.display = 'none';
+   
+   /* Carrega o botão de usuário/logout no header (opcional, ver abaixo) */
+   if (localStorage.getItem(PEND_KEY) === '1') {
+       autosave.alteracoesPendentes = true;
+       atualizarBotaoSalvar();
+   }
 
     /* ---------- Atalhos globais ---------- */
     document.addEventListener('keydown', e => {
