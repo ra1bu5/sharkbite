@@ -13,10 +13,26 @@
 <link rel="stylesheet" href="css/10-admin.css">
 <style>
 /* pequenos ajustes só pra essa página */
-.admin-page{max-width:1100px;margin:0 auto;padding:24px clamp(12px,3vw,32px)}
+.admin-page{
+    max-width:1100px;
+    margin:0 auto;
+    padding:24px clamp(12px,3vw,32px) 40px;
+    width:100%;
+    box-sizing:border-box;
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+}
 .admin-page h1{margin:0 0 6px;font-size:26px;color:var(--text-heading)}
 .admin-page .sub{color:var(--text-muted);margin-bottom:22px}
 .pane-nav{display:flex;gap:6px;border-bottom:2px solid var(--border-color-strong);margin-bottom:18px;flex-wrap:wrap}
+.pane-nav{
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:var(--bg-container);
+    padding-top:8px;
+}
 .pane-nav button{background:var(--bg-panel-dark);border:0;border-radius:8px 8px 0 0;padding:10px 16px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
 .pane-nav button.active{background:var(--primary);color:var(--text-on-primary)}
 .pane{display:none}
