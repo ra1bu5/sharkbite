@@ -141,8 +141,6 @@ async function renomear(id){
     const nome = prompt('Novo nome do ambiente:', a.nome);
     if(nome === null || !nome.trim() || nome.trim() === a.nome) return;
 
-    if(!await garantirLogin()) return;
-
     const { error } = await sb.from('ambientes')
         .update({ nome: nome.trim() })
         .eq('id', id);
@@ -166,8 +164,6 @@ async function alternarAtivo(id){
     const arquivar = a.ativo !== false;
 
     if(arquivar && !confirm(`Arquivar "${a.nome}"? Os dados continuam salvos e você pode restaurar depois.`)) return;
-
-    if(!await garantirLogin()) return;
 
     const { error } = await sb.from('ambientes')
         .update({ ativo: !arquivar })
