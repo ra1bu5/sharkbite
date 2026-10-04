@@ -88,7 +88,7 @@ async function salvarAutomatico(){
 
         setTimeout(() => {
             if(autosave.estado === 'salvo' && !autosave.alteracoesPendentes){
-                autosave.estado = 'salvo';
+                autosave.estado = 'idle';
                 atualizarBotaoSalvar();
             }
         }, 2000);
@@ -131,27 +131,43 @@ function atualizarBotaoSalvar(){
     const btn = document.getElementById('btnSalvar');
     if(!btn) return;
 
-    btn.classList.remove('autosave-pendente', 'autosave-salvando', 'autosave-erro');
-
-    if(autosave.estado === 'salvando'){
-        btn.textContent = '⏳ Salvando…';
-        btn.classList.add('autosave-salvando');
-        btn.disabled = true;
-        return;
-    }
+    btn.classList.remove('autosave-pendente', 'autosave-salvando', 'autosave-erro', 'autosave-ok');
+    btn.removeAttribute('title');
     btn.disabled = false;
 
+    /* --- Salvando: spinner girando --- */
+    if(autosave.estado === 'salvando'){
+        btn.innerHTML = ic('loader', 18);
+        btn.classList.add('autosave-salvando');
+        btn.disabled = true;
+        btn.title = 'Salvando…';
+        return;
+    }
+
+    /* --- Erro: alerta vermelho, persiste até o próximo salvamento com sucesso --- */
     if(autosave.estado === 'erro'){
-        btn.textContent = 'Erro — tentar de novo';
+        btn.innerHTML = ic('alert', 18);
         btn.classList.add('autosave-erro');
+        btn.title = 'Erro ao salvar — clique para tentar novamente';
         return;
     }
+
+    /* --- Sucesso: check verde por 2s --- */
+    if(autosave.estado === 'salvo' && !autosave.alteracoesPendentes){
+        btn.innerHTML = ic('checkOk', 18);
+        btn.classList.add('autosave-ok');
+        btn.title = 'Salvo';
+        return;
+    }
+
+    /* --- Default / pendente: disquete --- */
+    btn.innerHTML = ic('save', 18);
     if(autosave.alteracoesPendentes){
-        btn.textContent = 'Salvar';
         btn.classList.add('autosave-pendente');
-        return;
+        btn.title = 'Salvar (alterações pendentes)';
+    } else {
+        btn.title = 'Salvar';
     }
-    btn.textContent = 'Salvar';
 }
 
 /* ============================================================
@@ -178,7 +194,12 @@ async function salvarManual(){
         autosave.alteracoesPendentes = false;
         autosave.ultimoErro = null;
         atualizarBotaoSalvar();
-        setTimeout(() => atualizarBotaoSalvar(), 2000);
+        setTimeout(() => {
+            if(autosave.estado === 'salvo' && !autosave.alteracoesPendentes){
+                autosave.estado = 'idle';
+                atualizarBotaoSalvar();
+            }
+        }, 2000);
     } else {
         autosave.estado = 'erro';
         atualizarBotaoSalvar();
