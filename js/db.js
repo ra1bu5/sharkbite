@@ -212,33 +212,33 @@ async function sincronizarComBanco(){
 
     try {
         /* Upserts (pai antes do filho) */
-         for(const t of TABELAS){
-             const pk = pkDe(t);
-             const pkStr = Array.isArray(pk) ? pk.join(',') : pk;
-             const pkCampo = Array.isArray(pk) ? pk[pk.length - 1] : pk;  // 'chave' pra config_ambiente
-         
-             for(let i = 0; i < ups[t].length; i += 100){
-                 const lote = ups[t].slice(i, i + 100);
-                 const { error } = await sb.from(t).upsert(lote, { onConflict: pkStr });
-                 if(error) throw new Error(`${t}: ${error.message}`);
-                 lote.forEach(r => { snapshot[t][r[pkCampo]] = hashes[t][r[pkCampo]]; });
-                 ops += lote.length;
-             }
-         }
+        for(const t of TABELAS){
+            const pk = pkDe(t);
+            const pkStr = Array.isArray(pk) ? pk.join(',') : pk;
+            const pkCampo = Array.isArray(pk) ? pk[pk.length - 1] : pk;
+
+            for(let i = 0; i < ups[t].length; i += 100){
+                const lote = ups[t].slice(i, i + 100);
+                const { error } = await sb.from(t).upsert(lote, { onConflict: pkStr });
+                if(error) throw new Error(`${t}: ${error.message}`);
+                lote.forEach(r => { snapshot[t][r[pkCampo]] = hashes[t][r[pkCampo]]; });
+                ops += lote.length;
+            }
+        }
 
         /* Deletes (filho antes do pai) */
         for(const t of [...TABELAS].reverse()){
-            if(t === 'config_ambiente'){
+            if(t === 'config' || t === 'config_ambiente') continue;
             for(let i = 0; i < dels[t].length; i += 100){
                 const lote = dels[t].slice(i, i + 100);
-                const { error } = await sb.from(t).delete().in(pkDe(t), lote);
+                const { error } = await sb.from(t).delete().in('id', lote);
                 if(error) throw new Error(`${t}: ${error.message}`);
                 lote.forEach(id => { delete snapshot[t][id]; });
                 ops += lote.length;
             }
         }
     } finally {
-        salvarSnapshot();   // guarda o progresso mesmo se der erro no meio
+        salvarSnapshot();
     }
     return ops;
 }
@@ -257,28 +257,27 @@ function salvarAntesDeFecharKeepalive(){
         Prefer: 'resolution=merge-duplicates,return=minimal'
     };
 
-         TABELAS.forEach(t => {
-             if(ups[t].length){
-                 const pk = pkDe(t);
-                 const pkStr = Array.isArray(pk) ? pk.join(',') : pk;
-                 fetch(`${SUPABASE_URL}/rest/v1/${t}?on_conflict=${pkStr}`, {
+    TABELAS.forEach(t => {
+        const pk = pkDe(t);
+        const pkStr = Array.isArray(pk) ? pk.join(',') : pk;
+
+        if(ups[t].length){
+            fetch(`${SUPABASE_URL}/rest/v1/${t}?on_conflict=${pkStr}`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(ups[t]),
                 keepalive: true
             }).catch(() => {});
         }
-          if(dels[t].length && !Array.isArray(pkDe(t))){  // pula config_ambiente
 
-        if(dels[t].length){
-            fetch(`${SUPABASE_URL}/rest/v1/${t}?${pkDe(t)}=in.(${dels[t].join(',')})`, {
+        if(dels[t].length && !Array.isArray(pk)){
+            fetch(`${SUPABASE_URL}/rest/v1/${t}?id=in.(${dels[t].join(',')})`, {
                 method: 'DELETE',
                 headers,
                 keepalive: true
             }).catch(() => {});
         }
     });
-}
 }
 
 /* ============================================================
