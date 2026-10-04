@@ -233,19 +233,24 @@ function prepararDados(){
    BOOTSTRAP — dispara tudo no DOMContentLoaded
 ============================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
-
-    /* Sem ambiente na URL → volta para index */
     if(!AMBIENTE_ID){ location.replace('index.html'); return; }
 
-    /* Valida o ambiente */
+    /* PRIMEIRO: aguarda o guard de auth */
+    const ctx = await window.Auth.ready;
+    if (!ctx) return;   // redireciona pro login
+    authUser  = ctx.user;
+    authToken = 'supabase';
+
+    /* Esconde o botão Admin para não-admins */
+    const btnAdmin = document.getElementById('btnAdmin');
+    if (btnAdmin && !window.Auth.isAdmin) btnAdmin.style.display = 'none';
+
+    /* AGORA sim carrega os dados */
     const amb = await carregarAmbiente();
     if(!amb){ location.replace('index.html'); return; }
 
-    /* Carrega os dados */
     await loadData();
     await ajustarNextIdGlobal();
-
-    /* Aplica tema e preferências do usuário */
     aplicarTema();
 
     const pref = localStorage.getItem(VIEW_KEY);
