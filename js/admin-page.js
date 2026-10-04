@@ -28,16 +28,17 @@
    CONFIG GLOBAL (tabela config)
 ============================================================ */
 async function carregarConfigGlobal(){
-  const { data, error } = await sb.from('config').select('*');
+  const { data: rows, error } = await sb.from('config').select('*');
   if (error) { console.error(error); return; }
 
-  data.config = data.config || JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-  (data || []).forEach(r => {
+  if (!data.config) data.config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+
+  (rows || []).forEach(r => {
     data.config[configDoBanco(r.chave)] = r.valor;
   });
-  // garante defaults
+
   ['tipos','status','responsaveis','areas','setores'].forEach(k => {
-    if (!data.config[k]) data.config[k] = DEFAULT_CONFIG[k] || [];
+    if (!data.config[k]) data.config[k] = JSON.parse(JSON.stringify(DEFAULT_CONFIG[k] || []));
   });
 }
 
