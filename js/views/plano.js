@@ -255,6 +255,9 @@ function planoResumoHtml(a, aberta){
         : '';
 
     return `
+        <span class="plano-acao-handle" title="Arraste para reordenar"
+              onclick="event.stopPropagation()"
+              onmousedown="event.stopPropagation()">${ic('grip', 12)}</span>
         <span class="plano-acao-seta">${aberta ? '▾' : '▸'}</span>
         ${planoBadge(PLANO_ACAO_COR[a.status] || '#888', a.status || 'A fazer', 'Status')}
         <span class="plano-acao-titulo ${a.acao ? '' : 'vazio'}">${escapeHtml(a.acao || 'Nova ação (clique para preencher)')}</span>
@@ -536,3 +539,84 @@ function planoExcluirDemanda(){
     fecharDetalheDemanda();
     renderPlano();
 }
+
+/* ============================================================
+   REORDENAR AÇÕES POR DRAG (alça ⋮⋮)
+   Persiste a ordem em d.acoes[].ordem
+============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+    const root = document.getElementById('planoAcoesBody');
+    if(!root || root.dataset.dragBound) return;
+    root.dataset.dragBound = '1';
+
+    let arrastando = null;
+    const cardDe = e => e.target.closest && e.target.closest('.plano-acao-card');
+
+    /* Só a alça ativa o draggable do card */
+    root.addEventListener('mousedown', e => {
+        const h = e.target.closest && e.target.closest('.plano-acao-handle');
+        if(h) h.closest('.plano-acao-card').draggable = true;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if(!arrastando){
+            root.querySelectorAll('.plano-acao-card[draggable="true"]')
+                .forEach(c => { c.draggable = false; });
+        }
+    });
+
+    root.addEventListener('dragstart', e => {
+        const card = cardDe(e);
+        if(!card || e.target !== card) return;
+        arrastando = card;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', 'plano-acao');
+        setTimeout(() => card.classList.add('dragging-ck'), 0);
+    });
+
+    root.addEventListener('dragover', e => {
+        if(!arrastando) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const ref = [...root.querySelectorAll('.plano-acao-card')]
+            .filter(c => c !== arrastando)
+            .find(c => {
+                const b = c.getBoundingClientRect();
+                return e.clientY < b.top + b.height / 2;
+            });
+        if(ref){
+            if(arrastando.nextElementSibling !== ref) root.insertBefore(arrastando, ref);
+        } else if(root.lastElementChild !== arrastando){
+            root.appendChild(arrastando);
+        }
+    });
+
+    root.addEventListener('drop', e => { if(arrastando) e.preventDefault(); });
+
+    root.addEventListener('dragend', () => {
+        if(!arrastando) return;
+        const c = arrastando;
+        arrastando = null;
+        c.draggable = false;
+        c.classList.remove('dragging-ck');
+
+        const d = planoDemandaAtiva();
+        if(!d) return;
+
+        /* Lê a nova ordem direto do DOM */
+        const ids = [...root.querySelectorAll('.plano-acao-card')]
+            .map(el => Number(el.dataset.acaoId));
+
+        /* Reordena d.acoes conforme o DOM */
+        const mapa  = new Map(d.acoes.map(a => [a.id, a]));
+        const nova  = ids.map(id => mapa.get(id)).filter(Boolean);
+
+        /* Sanidade: se algo se perdeu no caminho, aborta */
+        if(nova.length !== d.acoes.length) return;
+
+        d.acoes = nova;
+        d.acoes.forEach((a, i) => { a.ordem = (i + 1) * 10; });
+
+        marcarAlterado({ imediato: getAutosaveConfig().dragImediato });
+    });
+});
