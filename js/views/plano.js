@@ -203,6 +203,7 @@ function abrirDetalheDemanda(id, focoTitulo){
     document.getElementById('planoFormProximoPasso').value = d.proximoPasso || '';
     document.getElementById('planoFormBloqueio').value = d.bloqueio || '';
     document.getElementById('planoFormLink').value = d.link || '';
+    planoLinkInput(document.getElementById('planoFormLink'));
 
     preencherSelect('planoFormTipo',        PLANO_TIPOS, d.tipo || '');
     preencherSelect('planoFormPorte',       PLANO_PORTES.map(p => ({ value: p.id, label: p.label + ' — ' + p.desc })), d.porte || 'M');
@@ -295,6 +296,26 @@ function planoObsInput(el){
 
     preview.hidden = false;
     /* linkifyText() já vive em links.js e escapa o HTML antes de criar os <a> */
+    preview.innerHTML = linkifyText(txt).replace(/\n/g, '<br>');
+}
+
+/* Handler do campo "Link" (demanda): auto-resize + preview linkificado */
+function planoLinkInput(el){
+    planoInputAutoResize(el);
+
+    const preview = document.getElementById('planoLinkPreview');
+    if(!preview) return;
+
+    const txt = el.value || '';
+    const temLink = /(?:https?:\/\/|www\.)[^\s<>"')]+/i.test(txt);
+
+    if(!temLink){
+        preview.hidden = true;
+        preview.innerHTML = '';
+        return;
+    }
+
+    preview.hidden = false;
     preview.innerHTML = linkifyText(txt).replace(/\n/g, '<br>');
 }
 
