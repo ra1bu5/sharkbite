@@ -254,7 +254,13 @@
             </div>
             <div class="field" style="grid-column:1/-1;">
                 <label>Link</label>
-                <input type="text" id="planoFormLink" onchange="planoSalvarDemandaForm()" placeholder="Pasta, painel, ticket, e-mail…">
+                <textarea id="planoFormLink"
+                          class="plano-input-auto"
+                          rows="1"
+                          placeholder="Pasta, painel, ticket, e-mail…"
+                          oninput="planoLinkInput(this)"
+                          onchange="planoSalvarDemandaForm()"></textarea>
+                <div class="plano-obs-link-preview" id="planoLinkPreview" hidden></div>
             </div>
         </div>
 
