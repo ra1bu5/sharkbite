@@ -279,12 +279,21 @@
 /* Resumo (linha visível quando fechado) */
 .plano-acao-resumo {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
     padding: 9px 12px;
     cursor: pointer;
     font: 500 14px var(--font-body);
     color: var(--text-color);
+}
+.plano-acao-resumo > .plano-acao-seta,
+.plano-acao-resumo > .badge,
+.plano-acao-resumo > .plano-acao-etapa,
+.plano-acao-resumo > .plano-acao-resp,
+.plano-acao-resumo > .plano-acao-meta,
+.plano-acao-resumo > .btn-mini {
+    /* pequeno deslocamento pra alinhar com a 1ª linha do título */
+    margin-top: 2px;
 }
 .plano-acao-resumo:hover { background: var(--bg-hover); }
 
@@ -299,9 +308,10 @@
     min-width: 0;
     font-weight: 700;
     color: var(--text-heading);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.35;
 }
 .plano-acao-titulo.vazio {
     font-weight: 500;
