@@ -203,7 +203,10 @@ function abrirDetalheDemanda(id, focoTitulo){
     document.getElementById('planoFormProximoPasso').value = d.proximoPasso || '';
     document.getElementById('planoFormBloqueio').value = d.bloqueio || '';
     document.getElementById('planoFormLink').value = d.link || '';
-    planoLinkInput(document.getElementById('planoFormLink'));
+   const _linkEl = document.getElementById('planoFormLink');
+   _linkEl.value = d.link || '';
+   planoLinkDesenhar(_linkEl);
+   planoInputAutoResize(_linkEl);
 
     preencherSelect('planoFormTipo',        PLANO_TIPOS, d.tipo || '');
     preencherSelect('planoFormPorte',       PLANO_PORTES.map(p => ({ value: p.id, label: p.label + ' — ' + p.desc })), d.porte || 'M');
@@ -299,25 +302,41 @@ function planoObsInput(el){
     preview.innerHTML = linkifyText(txt).replace(/\n/g, '<br>');
 }
 
-/* Handler do campo "Link" (demanda): auto-resize + preview linkificado */
+/* Handler do campo "Link": auto-resize + overlay linkificado */
 function planoLinkInput(el){
     planoInputAutoResize(el);
+    planoLinkDesenhar(el);
+}
 
-    const preview = document.getElementById('planoLinkPreview');
-    if(!preview) return;
+/* Reconstrói o overlay com o texto atual (URLs viram <a>) */
+function planoLinkDesenhar(el){
+    const overlay = document.getElementById('planoLinkOverlay');
+    if(!overlay) return;
 
     const txt = el.value || '';
     const temLink = /(?:https?:\/\/|www\.)[^\s<>"')]+/i.test(txt);
 
     if(!temLink){
-        preview.hidden = true;
-        preview.innerHTML = '';
-        return;
+        overlay.innerHTML = '';
+    } else {
+        /* linkifyText() já escapa HTML antes de criar os <a> */
+        overlay.innerHTML = linkifyText(txt).replace(/\n/g, '<br>');
     }
 
-    preview.hidden = false;
-    preview.innerHTML = linkifyText(txt).replace(/\n/g, '<br>');
+    /* Sincroniza posição vertical do conteúdo com o textarea */
+    planoLinkSyncScroll(el);
 }
+
+/* Mantém o conteúdo do overlay alinhado quando o textarea rola */
+function planoLinkSyncScroll(el){
+    const overlay = document.getElementById('planoLinkOverlay');
+    if(!overlay) return;
+    overlay.scrollTop = el.scrollTop;
+    overlay.scrollLeft = el.scrollLeft;
+}
+
+/* Placeholder: o textarea colorido transparente perde a cor nativa */
+/* Vamos repor via overlay quando vazio (prefixo do CSS) */
 
 /* Roda depois de cada re-render do modal: ajusta altura + reconstrói previews */
 function planoAutoResizeTodos(){
