@@ -436,3 +436,38 @@
     font-size: 13px;
     opacity: .8;
 }
+
+/* ---------- Textareas auto-resize nos cartões de ação ---------- */
+.plano-input-auto {
+    resize: none;
+    overflow: hidden;
+    min-height: 32px;
+    max-height: 320px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+/* Preview linkificado das observações (aparece só quando há URL) */
+.plano-obs-link-preview {
+    margin-top: 6px;
+    padding: 8px 10px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--secondary);
+    border-radius: var(--radius-sm);
+    font: 500 13px var(--font-body);
+    line-height: 1.5;
+    color: var(--text-color);
+    word-break: break-word;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.plano-obs-link-preview a {
+    color: var(--secondary);
+    text-decoration: underline;
+    font-weight: 600;
+    word-break: break-all;
+}
+.plano-obs-link-preview a:hover { color: var(--primary); }
