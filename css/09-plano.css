@@ -382,8 +382,9 @@
 ============================================================ */
 @media (min-width: 701px) {
     #modalDemanda .modal {
-        width: min(1900px, 100% - 16px);
-        height: min(92vh, 900px);
+        width:     min(1400px, 100% - 16px);
+        max-width: min(1400px, 100% - 16px);
+        height:    min(92vh, 900px);
     }
 }
 
