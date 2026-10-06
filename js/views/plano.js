@@ -266,6 +266,46 @@ function planoResumoHtml(a, aberta){
     `;
 }
 
+/* ============================================================
+   AUTO-RESIZE + PREVIEW DE LINKS NOS CAMPOS DE AÇÃO
+============================================================ */
+
+/* Auto-altura: o textarea cresce conforme o conteúdo */
+function planoInputAutoResize(el){
+    if(!el) return;
+    el.style.height = 'auto';
+    el.style.height = (el.scrollHeight) + 'px';
+}
+
+/* Handler do campo "Observações": auto-resize + preview linkificado */
+function planoObsInput(el){
+    planoInputAutoResize(el);
+
+    const preview = document.getElementById('planoObsPreview-' + el.dataset.acaoId);
+    if(!preview) return;
+
+    const txt = el.value || '';
+    const temLink = /(?:https?:\/\/|www\.)[^\s<>"')]+/i.test(txt);
+
+    if(!temLink){
+        preview.hidden = true;
+        preview.innerHTML = '';
+        return;
+    }
+
+    preview.hidden = false;
+    /* linkifyText() já vive em links.js e escapa o HTML antes de criar os <a> */
+    preview.innerHTML = linkifyText(txt).replace(/\n/g, '<br>');
+}
+
+/* Roda depois de cada re-render do modal: ajusta altura + reconstrói previews */
+function planoAutoResizeTodos(){
+    document.querySelectorAll('#planoAcoesBody .plano-input-auto').forEach(el => {
+        planoInputAutoResize(el);
+        if(el.id && el.id.startsWith('planoObs-')) planoObsInput(el);
+    });
+}
+
 function renderPlanoAcoesModal(){
     const root = document.getElementById('planoAcoesBody');
     if(!root) return;
@@ -285,10 +325,11 @@ function renderPlanoAcoesModal(){
             <div class="plano-acao-detalhe">
                 <div class="plano-acao-grid">
                     <label class="c12">Ação
-                        <input type="text" class="plano-input plano-acao-nome"
-                               placeholder="Verbo + objeto, ex.: Mapear tabelas de origem"
-                               value="${escapeHtml(a.acao || '')}"
-                               onchange="planoAcaoSet(${a.id}, 'acao', this.value)">
+                        <textarea class="plano-input plano-input-auto plano-acao-nome"
+                                  rows="1"
+                                  placeholder="Verbo + objeto, ex.: Mapear tabelas de origem"
+                                  oninput="planoInputAutoResize(this)"
+                                  onchange="planoAcaoSet(${a.id}, 'acao', this.value)">${escapeHtml(a.acao || '')}</textarea>
                     </label>
                     <label class="c4">Etapa
                         <select class="plano-input" onchange="planoAcaoSet(${a.id}, 'etapa', this.value)">
@@ -326,9 +367,14 @@ function renderPlanoAcoesModal(){
                                onchange="planoAcaoSet(${a.id}, 'esforcoReal', this.value)">
                     </label>
                     <label class="c12">Observações
-                        <input type="text" class="plano-input" placeholder="Decisões, premissas, regras de negócio…"
-                               value="${escapeHtml(a.observacoes || '')}"
-                               onchange="planoAcaoSet(${a.id}, 'observacoes', this.value)">
+                        <textarea class="plano-input plano-input-auto"
+                                  id="planoObs-${a.id}"
+                                  data-acao-id="${a.id}"
+                                  rows="1"
+                                  placeholder="Decisões, premissas, regras de negócio…"
+                                  oninput="planoObsInput(this)"
+                                  onchange="planoAcaoSet(${a.id}, 'observacoes', this.value)">${escapeHtml(a.observacoes || '')}</textarea>
+                        <div class="plano-obs-link-preview" id="planoObsPreview-${a.id}" hidden></div>
                     </label>
                 </div>
             </div>`;
@@ -338,6 +384,9 @@ function renderPlanoAcoesModal(){
             ${detalhe}
         </div>`;
     }).join('');
+
+    /* Ajusta altura dos textareas + reconstrói previews */
+    requestAnimationFrame(planoAutoResizeTodos);
 }
 
 function planoToggleAcao(acaoId){
