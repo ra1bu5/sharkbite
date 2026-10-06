@@ -471,3 +471,55 @@
     word-break: break-all;
 }
 .plano-obs-link-preview a:hover { color: var(--primary); }
+
+/* ---------- Link inline: textarea transparente + overlay linkificado ---------- */
+.link-input-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.link-input-textarea {
+    /* Mesma tipografia do overlay — não pode divergir 1px */
+    font: 500 13px var(--font-body);
+    line-height: 1.4;
+    padding: 5px 7px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-panel-alt);
+    width: 100%;
+    box-sizing: border-box;
+    resize: none;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    /* Texto invisível, mas com cursor visível */
+    color: transparent;
+    caret-color: var(--text-color);
+}
+.link-input-textarea:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: -1px;
+}
+
+.link-input-overlay {
+    position: absolute;
+    inset: 0;
+    padding: 5px 7px;    /* igual ao textarea */
+    font: 500 13px var(--font-body);
+    line-height: 1.4;
+    color: var(--text-color);
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    overflow: hidden;
+    pointer-events: none;      /* cliques passam pro textarea */
+    z-index: 2;
+}
+.link-input-overlay a {
+    color: var(--secondary);
+    text-decoration: underline;
+    font-weight: 600;
+    pointer-events: auto;      /* EXCEÇÃO: link é clicável */
+    cursor: pointer;
+}
+.link-input-overlay a:hover { color: var(--primary); }
