@@ -319,6 +319,26 @@ function planoLinkInput(el){
     preview.innerHTML = linkifyText(txt).replace(/\n/g, '<br>');
 }
 
+/* Handler do campo "Link" (demanda): auto-resize + preview linkificado */
+function planoLinkInput(el){
+    planoInputAutoResize(el);
+
+    const preview = document.getElementById('planoLinkPreview');
+    if(!preview) return;
+
+    const txt = el.value || '';
+    const temLink = /(?:https?:\/\/|www\.)[^\s<>"')]+/i.test(txt);
+
+    if(!temLink){
+        preview.hidden = true;
+        preview.innerHTML = '';
+        return;
+    }
+
+    preview.hidden = false;
+    preview.innerHTML = linkifyText(txt).replace(/\n/g, '<br>');
+}
+
 /* Roda depois de cada re-render do modal: ajusta altura + reconstrói previews */
 function planoAutoResizeTodos(){
     document.querySelectorAll('#planoAcoesBody .plano-input-auto').forEach(el => {
