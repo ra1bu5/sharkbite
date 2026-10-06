@@ -478,11 +478,18 @@
     width: 100%;
 }
 
+/* Especificidade alta (.modal .link-input-wrap .link-input-textarea) para
+   vencer .modal textarea em 03-componentes.css, que trazia padding e
+   font diferentes e desalinhava o overlay. */
+.modal .link-input-wrap .link-input-textarea,
 .link-input-textarea {
-    /* Mesma tipografia do overlay — não pode divergir 1px */
-    font: 500 13px var(--font-body);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
     line-height: 1.4;
+    letter-spacing: 0;
     padding: 5px 7px;
+    margin: 0;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     background: var(--bg-panel-alt);
@@ -492,34 +499,54 @@
     overflow: hidden;
     position: relative;
     z-index: 1;
-    /* Texto invisível, mas com cursor visível */
     color: transparent;
     caret-color: var(--text-color);
+    min-height: 0;
+    max-height: none;
 }
+
+.modal .link-input-wrap .link-input-textarea:focus,
 .link-input-textarea:focus {
     outline: 2px solid var(--primary);
     outline-offset: -1px;
 }
 
+/* Placeholder visível mesmo com texto transparente */
+.modal .link-input-wrap .link-input-textarea::placeholder,
+.link-input-textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+}
+
 .link-input-overlay {
     position: absolute;
     inset: 0;
-    padding: 5px 7px;    /* igual ao textarea */
-    font: 500 13px var(--font-body);
+    box-sizing: border-box;
+    padding: 5px 7px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
     line-height: 1.4;
+    letter-spacing: 0;
     color: var(--text-color);
     white-space: pre-wrap;
     word-break: break-word;
     overflow-wrap: anywhere;
     overflow: hidden;
-    pointer-events: none;      /* cliques passam pro textarea */
+    pointer-events: none;
     z-index: 2;
 }
 .link-input-overlay a {
     color: var(--secondary);
     text-decoration: underline;
     font-weight: 600;
-    pointer-events: auto;      /* EXCEÇÃO: link é clicável */
+    pointer-events: auto;
     cursor: pointer;
 }
 .link-input-overlay a:hover { color: var(--primary); }
+
+/* Scrollbar transparente no textarea (o overlay acompanha via JS) */
+.modal .link-input-wrap .link-input-textarea::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
