@@ -254,15 +254,17 @@
             </div>
             <div class="field" style="grid-column:1/-1;">
                 <label>Link</label>
-                <textarea id="planoFormLink"
-                          class="plano-input-auto"
-                          rows="1"
-                          placeholder="Pasta, painel, ticket, e-mail…"
-                          oninput="planoLinkInput(this)"
-                          onchange="planoSalvarDemandaForm()"></textarea>
-                <div class="plano-obs-link-preview" id="planoLinkPreview" hidden></div>
+                <div class="link-input-wrap">
+                    <div class="link-input-overlay" id="planoLinkOverlay" aria-hidden="true"></div>
+                    <textarea id="planoFormLink"
+                              class="plano-input-auto link-input-textarea"
+                              rows="1"
+                              placeholder="Pasta, painel, ticket, e-mail…"
+                              oninput="planoLinkInput(this)"
+                              onscroll="planoLinkSyncScroll(this)"
+                              onchange="planoSalvarDemandaForm()"></textarea>
+                </div>
             </div>
-        </div>
 
         <div class="plano-acoes-head">
             <h3>Ações</h3>
