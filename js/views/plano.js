@@ -254,13 +254,13 @@ function planoResumoHtml(a, aberta){
         ? `${a.esforcoReal || 0}/${a.esforcoEstimado || 0} h`
         : '';
 
-    return `
-        <span class="plano-acao-handle"
-              title="Arraste para reordenar"
-              onclick="event.stopPropagation()"
-        <span class="plano-acao-seta">${aberta ? '▾' : '▸'}</span>
-        ${planoBadge(PLANO_ACAO_COR[a.status] || '#888', a.status || 'A fazer', 'Status')}
-        <span class="plano-acao-titulo ${a.acao ? '' : 'vazio'}">${escapeHtml(a.acao || 'Nova ação (clique para preencher)')}</span>
+   return `
+       <span class="plano-acao-handle"
+          title="Arraste para reordenar"
+          onclick="event.stopPropagation()">${ic('grip', 14)}</span>
+    <span class="plano-acao-seta">${aberta ? '▾' : '▸'}</span>
+    ${planoBadge(PLANO_ACAO_COR[a.status] || '#888', a.status || 'A fazer', 'Status')}
+    <span class="plano-acao-titulo ${a.acao ? '' : 'vazio'}">${escapeHtml(a.acao || 'Nova ação (clique para preencher)')}</span>
         <span class="plano-acao-etapa">${escapeHtml(a.etapa || '')}</span>
         <span class="plano-acao-resp">${resp}</span>
         <span class="plano-acao-meta">${prazo}</span>
