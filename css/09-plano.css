@@ -481,6 +481,10 @@
     color: var(--text-muted);
     cursor: grab;
     opacity: .6;
-    margin-top: 2px;   /* alinha com a 1ª linha do título */
+    margin-top: 2px;
+    flex-shrink: 0;          /* ← não deixa encolher */
+    width: 16px;             /* ← largura fixa */
+    height: 16px;            /* ← altura fixa */
 }
 .plano-acao-handle:hover { opacity: 1; }
+.plano-acao-handle:active { cursor: grabbing; }
