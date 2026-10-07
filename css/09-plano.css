@@ -471,31 +471,3 @@
     word-break: break-all;
 }
 .plano-obs-link-preview a:hover { color: var(--primary); }
-
-/* ---------- Alça de arrastar das ações ---------- */
-.plano-acao-handle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 16px;
-    color: var(--text-muted);
-    cursor: grab;
-    opacity: .5;
-    transition: opacity .15s;
-}
-.plano-acao-handle:hover { opacity: 1; }
-.plano-acao-handle:active { cursor: grabbing; }
-
-/* Aplicar margin-top no handle, junto com os outros filhos do resumo */
-.plano-acao-resumo > .plano-acao-handle {
-    margin-top: 2px;
-}
-
-/* Estado enquanto arrasta */
-.plano-acao-card.dragging-acao {
-    opacity: .4;
-}
-
-/* Linha indicadora de onde vai cair */
-.plano-acao-card.drop-before { box-shadow: 0 -2px 0 0 var(--secondary); }
-.plano-acao-card.drop-after  { box-shadow: 0  2px 0 0 var(--secondary); }
