@@ -255,9 +255,10 @@ function planoResumoHtml(a, aberta){
         : '';
 
     return `
-        <span class="plano-acao-handle" title="Arraste para reordenar"
+        <span class="plano-acao-handle"
+              title="Arraste para reordenar"
               onclick="event.stopPropagation()"
-              onmousedown="event.stopPropagation()">${ic('grip', 12)}</span>
+              onmousedown="event.stopPropagation()">${ic('grip', 14)}</span>
         <span class="plano-acao-seta">${aberta ? '▾' : '▸'}</span>
         ${planoBadge(PLANO_ACAO_COR[a.status] || '#888', a.status || 'A fazer', 'Status')}
         <span class="plano-acao-titulo ${a.acao ? '' : 'vazio'}">${escapeHtml(a.acao || 'Nova ação (clique para preencher)')}</span>
@@ -350,6 +351,81 @@ function planoAutoResizeTodos(){
     });
 }
 
+/* ============================================================
+   DRAG-AND-DROP DAS AÇÕES (só pela alça ⋮⋮)
+============================================================ */
+function planoAcoesBindDrag(){
+    const root = document.getElementById('planoAcoesBody');
+    if(!root || root.dataset.dragBound) return;
+    root.dataset.dragBound = '1';
+
+    let arrastando = null;
+    const linhaDe = e => e.target.closest && e.target.closest('.plano-acao-card');
+
+    /* Só a alça inicia o arraste */
+    root.addEventListener('mousedown', e => {
+        const h = e.target.closest && e.target.closest('.plano-acao-handle');
+        if(h) h.closest('.plano-acao-card').draggable = true;
+    });
+    document.addEventListener('mouseup', () => {
+        if(!arrastando){
+            root.querySelectorAll('.plano-acao-card[draggable="true"]')
+                .forEach(r => { r.draggable = false; });
+        }
+    });
+
+    root.addEventListener('dragstart', e => {
+        const row = linhaDe(e);
+        if(!row || e.target !== row) return;
+        arrastando = row;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', 'plano-acao');
+        setTimeout(() => row.classList.add('dragging-acao'), 0);
+    });
+
+    root.addEventListener('dragover', e => {
+        if(!arrastando) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const ref = [...root.querySelectorAll('.plano-acao-card')]
+            .filter(r => r !== arrastando)
+            .find(r => {
+                const b = r.getBoundingClientRect();
+                return e.clientY < b.top + b.height / 2;
+            });
+        if(ref){
+            if(arrastando.nextElementSibling !== ref) root.insertBefore(arrastando, ref);
+        } else if(root.lastElementChild !== arrastando){
+            root.appendChild(arrastando);
+        }
+    });
+
+    root.addEventListener('drop', e => { if(arrastando) e.preventDefault(); });
+
+    root.addEventListener('dragend', () => {
+        if(!arrastando) return;
+        const r = arrastando;
+        arrastando = null;
+        r.draggable = false;
+        r.classList.remove('dragging-acao');
+
+        const d = planoDemandaAtiva();
+        if(!d) return;
+
+        /* Lê a nova ordem do DOM e persiste */
+        const ids = [...root.querySelectorAll('.plano-acao-card')]
+            .map(el => Number(el.dataset.acaoId));
+        ids.forEach((id, idx) => {
+            const a = d.acoes.find(x => x.id === id);
+            if(a) a.ordem = (idx + 1) * 10;
+        });
+        /* Reordena o array interno para que o próximo render saia certo */
+        d.acoes.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+
+        marcarAlterado();
+    });
+}
+
 function renderPlanoAcoesModal(){
     const root = document.getElementById('planoAcoesBody');
     if(!root) return;
@@ -430,8 +506,12 @@ function renderPlanoAcoesModal(){
     }).join('');
 
     /* Ajusta altura dos textareas + reconstrói previews */
+    /* Ajusta altura dos textareas + reconstrói previews */
     requestAnimationFrame(planoAutoResizeTodos);
-}
+
+    /* Liga o drag-and-drop (uma vez só — a função tem guard interno) */
+    planoAcoesBindDrag();
+}}
 
 function planoToggleAcao(acaoId){
     if(planoAcoesAbertas.has(acaoId)) planoAcoesAbertas.delete(acaoId);
