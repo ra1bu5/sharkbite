@@ -471,3 +471,5 @@
     word-break: break-all;
 }
 .plano-obs-link-preview a:hover { color: var(--primary); }
+
+.plano-acao-card.dragging-acao { opacity: .4; }
